@@ -1,0 +1,46 @@
+<project default="compile">
+
+  <property environment="env"/>
+
+  <path id = "classpath">
+    <pathelement path="eaddb.jar"/>
+  </path>
+
+
+  <!-- Compile -->
+  <target name="compile">
+    <javac srcdir="src" 
+           destdir="bin"
+           classpathref="classpath"
+	   debug="true"
+	   debuglevel="lines,vars,source"
+    />
+    <jar destfile="eaddb.jar">
+      <fileset dir="bin" includes="**/*.class"/>
+      <fileset dir="." includes="images/**"/>
+      <manifest>
+        <attribute name="Main-Class" value="org.mith.ead.swing.EadDbConvert"/>
+      </manifest>
+    </jar>
+  </target>
+
+
+  <!-- Test -->
+  <target name="test" depends="compile">
+    <java 
+      jar="eaddb.jar"
+      fork="true"
+    />
+  </target>
+
+
+  <!-- Clean -->
+  <target name="clean">
+    <delete>
+      <fileset dir="bin" includes="org"/>
+    </delete>
+  </target>
+
+</project>
+
+
