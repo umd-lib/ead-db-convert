@@ -40,303 +40,303 @@ import org.mith.ead.fs.FileIO;
  */
 public class EadGui extends JFrame implements ActionListener{
 
-JToolBar toolBar;
-EadGuiActionListener  listener;
-EadGuiPreference preference;
-DatabaseProperty dp;
-DataConvertor dc;
-JTextArea jta;
-JList listEad;
-DefaultListModel listModel;
-JButton processButton;
-Vector EADIDVector;
-MyListCellRenderer mlcr;
-JFileChooser  fc;
-ClassLoader cl;
+  JToolBar toolBar;
+  EadGuiActionListener  listener;
+  EadGuiPreference preference;
+  DatabaseProperty dp;
+  DataConvertor dc;
+  JTextArea jta;
+  JList listEad;
+  DefaultListModel listModel;
+  JButton processButton;
+  Vector EADIDVector;
+  MyListCellRenderer mlcr;
+  JFileChooser  fc;
+  ClassLoader cl;
 
 
-public EadGui(){
-super("EAD Finding Aids @MD 0.3a Release: 04-10-2007");
-setDefaultLookAndFeelDecorated(true);
-setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-dp = new DatabaseProperty();
-dp.reset();
-listModel = new DefaultListModel();
-mlcr = new MyListCellRenderer();
-EADIDVector = new Vector(30,10);
-cl= this.getClass().getClassLoader();
+  public EadGui(){
+    super("EAD Finding Aids @MD 0.3a Release: 04-10-2007");
+    setDefaultLookAndFeelDecorated(true);
+    setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+    dp = new DatabaseProperty();
+    dp.reset();
+    listModel = new DefaultListModel();
+    mlcr = new MyListCellRenderer();
+    EADIDVector = new Vector(30,10);
+    cl= this.getClass().getClassLoader();
 
-toolBar = new JToolBar();
-listener = new EadGuiActionListener();
-preference = new EadGuiPreference(dp,this);
+    toolBar = new JToolBar();
+    listener = new EadGuiActionListener();
+    preference = new EadGuiPreference(dp,this);
 
-addButtons(toolBar);	
-JPanel contentPane = new JPanel();
-contentPane.setLayout(new BorderLayout());
-contentPane.setPreferredSize(new Dimension(100,100));
-contentPane.add(toolBar,BorderLayout.NORTH);
-
-
-
-JPanel topPanel = new JPanel();
-topPanel.setLayout(new BorderLayout());
-JLabel label = new JLabel("List of Finding Aids");
-topPanel.add(label,BorderLayout.NORTH);
+    addButtons(toolBar);    
+    JPanel contentPane = new JPanel();
+    contentPane.setLayout(new BorderLayout());
+    contentPane.setPreferredSize(new Dimension(100,100));
+    contentPane.add(toolBar,BorderLayout.NORTH);
 
 
-listEad = new JList(listModel);
-listEad.setCellRenderer(mlcr);
-listEad.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+
+    JPanel topPanel = new JPanel();
+    topPanel.setLayout(new BorderLayout());
+    JLabel label = new JLabel("List of Finding Aids");
+    topPanel.add(label,BorderLayout.NORTH);
+
+
+    listEad = new JList(listModel);
+    listEad.setCellRenderer(mlcr);
+    listEad.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
 //listEad.setLayoutOrientation(JList.VERTICAL_WRAP);
 
-JScrollPane scrollList = new JScrollPane(listEad);
-topPanel.add(scrollList,BorderLayout.CENTER);
+    JScrollPane scrollList = new JScrollPane(listEad);
+    topPanel.add(scrollList,BorderLayout.CENTER);
 
 
 
 
-jta = new JTextArea(5,20);
+    jta = new JTextArea(5,20);
 
-JScrollPane scrollPane = 
-	new JScrollPane(jta,
-					JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-					JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+    JScrollPane scrollPane = 
+      new JScrollPane(jta,
+		      JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+		      JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
-scrollPane.setPreferredSize(new Dimension(150,150));
-jta.setEditable(false);
+    scrollPane.setPreferredSize(new Dimension(150,150));
+    jta.setEditable(false);
 
 
 
-JSplitPane jsplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-topPanel,scrollPane);
-jsplit.setOneTouchExpandable(true);
-jsplit.setDividerLocation(400);
-contentPane.add(jsplit,BorderLayout.CENTER);
-setContentPane(contentPane);
-Dimension d =  new Dimension(getToolkit().getScreenSize().height/2,getToolkit().getScreenSize().width/2);
-setSize(d);
-setLocation(200,200);
+    JSplitPane jsplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+				       topPanel,scrollPane);
+    jsplit.setOneTouchExpandable(true);
+    jsplit.setDividerLocation(400);
+    contentPane.add(jsplit,BorderLayout.CENTER);
+    setContentPane(contentPane);
+    Dimension d =  new Dimension(getToolkit().getScreenSize().height/2,getToolkit().getScreenSize().width/2);
+    setSize(d);
+    setLocation(200,200);
 //pack();
-validate();
-show();
-}
+    validate();
+    show();
+  }
 /**
  * @param toolBar
  */
-private void addButtons(JToolBar toolBar) {
-	JButton button = new JButton();
-	//cl = cl.getParent();
-	
-	try{
-	button = new JButton(new ImageIcon(cl.getResource("images/preferences.gif")));
+  private void addButtons(JToolBar toolBar) {
+    JButton button = new JButton();
+    //cl = cl.getParent();
+        
+    try{
+      button = new JButton(new ImageIcon(cl.getResource("images/preferences.gif")));
+    }catch(Exception ex){
+      System.out.println(ex.getMessage());
+    }
+    button.setActionCommand("preferences");
+    button.addActionListener(this);
+    button.setToolTipText("Change Preferences");
+    toolBar.add(button);
+        
+    try{
+      button = new JButton(new ImageIcon(cl.getResource("images/retrieve.gif")));
+    }catch(Exception ex){
+      System.out.println(ex.getMessage());
+    }
+    button.setActionCommand("retrieve");
+    button.addActionListener(this);
+    button.setToolTipText("Retrieve EAD Document ID");
+    toolBar.add(button);
+
+        
+    toolBar.addSeparator();
+
+        
+    try{
+      processButton = new JButton(new ImageIcon(cl.getResource("images/process.gif")));
+    }catch(Exception ex){
+      System.out.println(ex.getMessage());
+    }
+    processButton.setActionCommand("process");
+    processButton.addActionListener(this);
+    processButton.setToolTipText("Transform");
+    toolBar.add(processButton);
+
+/*      
+        try{
+	processButton = new JButton(new ImageIcon(cl.getResource("images/process-all.gif")));
 	}catch(Exception ex){
-		System.out.println(ex.getMessage());
+	System.out.println(ex.getMessage());
 	}
-	button.setActionCommand("preferences");
-	button.addActionListener(this);
-	button.setToolTipText("Change Preferences");
-	toolBar.add(button);
-	
-	try{
-	button = new JButton(new ImageIcon(cl.getResource("images/retrieve.gif")));
-	}catch(Exception ex){
-		System.out.println(ex.getMessage());
-	}
-	button.setActionCommand("retrieve");
-	button.addActionListener(this);
-	button.setToolTipText("Retrieve EAD Document ID");
-	toolBar.add(button);
+	processButton.setActionCommand("processAll");
+	processButton.addActionListener(this);
+	processButton.setToolTipText("Transform All");
+	toolBar.add(processButton);
 
-	
-	toolBar.addSeparator();
-
-	
-	try{
-		processButton = new JButton(new ImageIcon(cl.getResource("images/process.gif")));
-		}catch(Exception ex){
-			System.out.println(ex.getMessage());
-		}
-		processButton.setActionCommand("process");
-		processButton.addActionListener(this);
-		processButton.setToolTipText("Transform");
-		toolBar.add(processButton);
-
-/*	
-	try{
-			processButton = new JButton(new ImageIcon(cl.getResource("images/process-all.gif")));
-			}catch(Exception ex){
-				System.out.println(ex.getMessage());
-			}
-			processButton.setActionCommand("processAll");
-			processButton.addActionListener(this);
-			processButton.setToolTipText("Transform All");
-			toolBar.add(processButton);
-
-*/	
+*/      
 
 
-	try{
-		button = new JButton(new ImageIcon(cl.getResource("images/about.gif")));
-		}catch(Exception ex){
-			System.out.println(ex.getMessage());
-		}
-		button.setActionCommand("about");
-		button.addActionListener(this);
-		button.setToolTipText("About EAD @MD");
-		toolBar.addSeparator();
-		toolBar.addSeparator();
-		toolBar.add(button);
-	
-	
-	
-}
-public void actionPerformed(ActionEvent e) {
-	String command = e.getActionCommand();
+    try{
+      button = new JButton(new ImageIcon(cl.getResource("images/about.gif")));
+    }catch(Exception ex){
+      System.out.println(ex.getMessage());
+    }
+    button.setActionCommand("about");
+    button.addActionListener(this);
+    button.setToolTipText("About EAD @MD");
+    toolBar.addSeparator();
+    toolBar.addSeparator();
+    toolBar.add(button);
+        
+        
+        
+  }
+  public void actionPerformed(ActionEvent e) {
+    String command = e.getActionCommand();
 
-	//toolBar commands
-	if(command.equals("preferences"))
-	{
-	showPreference();
-	}
-	
-	if(command.equals("retrieve"))
-	{
-	retrieve();	
-	}	
-	
-	
-	if(command.equals("process")){
-	process();
-	}
-	
-	if(command.equals("about")){
-		showAbout();
-	}
+    //toolBar commands
+    if(command.equals("preferences"))
+    {
+      showPreference();
+    }
+        
+    if(command.equals("retrieve"))
+    {
+      retrieve();     
+    }       
+        
+        
+    if(command.equals("process")){
+      process();
+    }
+        
+    if(command.equals("about")){
+      showAbout();
+    }
 
-	if(command.equals("processAll")){
-	processAll();
-	}
+    if(command.equals("processAll")){
+      processAll();
+    }
 
 
-	
-}
+        
+  }
 /**
  * 
  */
-private void processAll() {
-	// TODO Auto-generated method stub
-	
-}
+  private void processAll() {
+    // TODO Auto-generated method stub
+        
+  }
 /**
  * 
  */
-private void showAbout() {
-	// put form elements here
-	JOptionPane.showMessageDialog(this,"Beast Finding Aid Data Converter.\nReleased Under GNU-GPL by Amit Kumar.\n amitku@uiuc.edu");
-}
+  private void showAbout() {
+    // put form elements here
+    JOptionPane.showMessageDialog(this,"Beast Finding Aid Data Converter.\nReleased Under GNU-GPL by Amit Kumar.\n amitku@uiuc.edu");
+  }
 /**
  * @param dc
  */
-public void setConvertor(DataConvertor dataconvertor) {
-	dc = dataconvertor;
-	dc.setHook(this);	
-}
+  public void setConvertor(DataConvertor dataconvertor) {
+    dc = dataconvertor;
+    dc.setHook(this);       
+  }
 /**
  * 
  */
-public void showPreference() {
-	
-	if(this.preference != null)
-			{	
-			this.preference.set(dp);
-			this.preference.setVisible(true);
-			}else{
-			System.out.println("PReference window is null");
-			}
-	
-}
+  public void showPreference() {
+        
+    if(this.preference != null)
+    {       
+      this.preference.set(dp);
+      this.preference.setVisible(true);
+    }else{
+      System.out.println("PReference window is null");
+    }
+        
+  }
 
-private void retrieve(){
-	System.out.println("Connect and Retrieve The eadid");
-		listModel.removeAllElements();
-		EADIDVector.removeAllElements();
-		Vector data  = dc.getAllEadId();		
-		for(int i=0;i< data.size(); i++){
-	//	System.out.println(data.elementAt(i)+"\n");	
-		listModel.add(i,((Couple)data.elementAt(i)));
-		EADIDVector.add(data.elementAt(i));
-	//	System.out.println(((Couple)data.elementAt(i)).eadid);
-		}
-		jta.setText(jta.getText()+"\n"+ "Getting eadid from database");
+  private void retrieve(){
+    System.out.println("Connect and Retrieve The eadid");
+    listModel.removeAllElements();
+    EADIDVector.removeAllElements();
+    Vector data  = dc.getAllEadId();                
+    for(int i=0;i< data.size(); i++){
+      //      System.out.println(data.elementAt(i)+"\n");     
+      listModel.add(i,((Couple)data.elementAt(i)));
+      EADIDVector.add(data.elementAt(i));
+      //      System.out.println(((Couple)data.elementAt(i)).eadid);
+    }
+    jta.setText(jta.getText()+"\n"+ "Getting eadid from database");
 
-}
-
-
-
-private void process(){
-	String selected = (String)((Couple)listEad.getSelectedValue()).eadid;
-		if(selected == null || selected == ""){
-		JOptionPane.showMessageDialog(this,
-		"Select a EAD ID to Transform. \n Click on retrieve button to view list.",
-		"Select EAD ID",
-		JOptionPane.WARNING_MESSAGE);
-
-		}else{
-		processButton.setEnabled(false);
-		jta.setText(jta.getText()+"\n"+"Starting Transformation "+ selected);
-		String selected_id = null;
-		for(int i=0; i < EADIDVector.size(); i++){
-			if(((Couple)EADIDVector.elementAt(i)).eadid.equals(selected)){
-				selected_id = ((Couple)EADIDVector.elementAt(i)).archdescid;
-				//System.out.println("SELECTED IS: "+ selected_id );
-			}
-		}
-		dc.transform(selected_id);
-		processButton.setEnabled(true);
-		}
-
-	
-}
-
-public void callBack(String id, String message){
-	jta.setText(jta.getText()+"\n Message from converter: "+ message);
-}
+  }
 
 
-public void callBack_saveXmlFile(XmlDataBuffer data){
-	
-	fc = new JFileChooser();
-	
-	if(dp.getProjectDir() != null)
-	fc.setCurrentDirectory(new File(dp.getProjectDir()));
-	
-	
-	
-	int returnVal  =fc.showSaveDialog(this);	
-	
-	if (returnVal == JFileChooser.APPROVE_OPTION) {
-	 File file = fc.getSelectedFile();
-	 System.out.println("SAVE FILE HERE "+ file.getAbsolutePath());
-	 FileIO fio = new FileIO();
-	 String utfData = data.toString();
-	 
-	 String data_val = data.toString();
-	 /*data_val = data_val.replace('�','\'');
-	 data_val = data_val.replace('�','"');
-	 data_val = data_val.replace('�','"');
-	 data_val = data_val.replace('�','\'');*/
-	
-	 try {
-		utfData = new String(data_val.getBytes("UTF8"),"UTF8");
-	} catch (UnsupportedEncodingException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
+
+  private void process(){
+    String selected = (String)((Couple)listEad.getSelectedValue()).eadid;
+    if(selected == null || selected == ""){
+      JOptionPane.showMessageDialog(this,
+				    "Select a EAD ID to Transform. \n Click on retrieve button to view list.",
+				    "Select EAD ID",
+				    JOptionPane.WARNING_MESSAGE);
+
+    }else{
+      processButton.setEnabled(false);
+      jta.setText(jta.getText()+"\n"+"Starting Transformation "+ selected);
+      String selected_id = null;
+      for(int i=0; i < EADIDVector.size(); i++){
+	if(((Couple)EADIDVector.elementAt(i)).eadid.equals(selected)){
+	  selected_id = ((Couple)EADIDVector.elementAt(i)).archdescid;
+	  //System.out.println("SELECTED IS: "+ selected_id );
 	}
-	// fio.write(file.getAbsolutePath(),data.toString());
-	fio.write(file.getAbsolutePath(),utfData);
-	 fio = null;
-	}
-	
-	fc= null;
-}
+      }
+      dc.transform(selected_id);
+      processButton.setEnabled(true);
+    }
+
+        
+  }
+
+  public void callBack(String id, String message){
+    jta.setText(jta.getText()+"\n Message from converter: "+ message);
+  }
+
+
+  public void callBack_saveXmlFile(XmlDataBuffer data){
+        
+    fc = new JFileChooser();
+        
+    if(dp.getProjectDir() != null)
+      fc.setCurrentDirectory(new File(dp.getProjectDir()));
+        
+        
+        
+    int returnVal  =fc.showSaveDialog(this);        
+        
+    if (returnVal == JFileChooser.APPROVE_OPTION) {
+      File file = fc.getSelectedFile();
+      System.out.println("SAVE FILE HERE "+ file.getAbsolutePath());
+      FileIO fio = new FileIO();
+      String utfData = data.toString();
+         
+      String data_val = data.toString();
+      /*data_val = data_val.replace('�','\'');
+	data_val = data_val.replace('�','"');
+	data_val = data_val.replace('�','"');
+	data_val = data_val.replace('�','\'');*/
+        
+      try {
+	utfData = new String(data_val.getBytes("UTF8"),"UTF8");
+      } catch (UnsupportedEncodingException e) {
+	// TODO Auto-generated catch block
+	e.printStackTrace();
+      }
+      // fio.write(file.getAbsolutePath(),data.toString());
+      fio.write(file.getAbsolutePath(),utfData);
+      fio = null;
+    }
+        
+    fc= null;
+  }
 }
