@@ -28,6 +28,9 @@ import javax.swing.JTextArea;
 import javax.swing.JToolBar;
 import javax.swing.ListSelectionModel;
 
+// log4j
+import org.apache.log4j.Logger;
+
 import org.mith.ead.data.Couple;
 import org.mith.ead.data.DataConvertor;
 import org.mith.ead.data.DatabaseProperty;
@@ -39,6 +42,8 @@ import org.mith.ead.fs.FileIO;
  * 
  */
 public class EadGui extends JFrame implements ActionListener{
+
+  static Logger log = Logger.getLogger(EadGui.class);
 
   JToolBar toolBar;
   EadGuiActionListener  listener;
@@ -130,7 +135,7 @@ public class EadGui extends JFrame implements ActionListener{
     try{
       button = new JButton(new ImageIcon(cl.getResource("images/preferences.gif")));
     }catch(Exception ex){
-      System.out.println(ex.getMessage());
+      log.error(ex.getMessage());
     }
     button.setActionCommand("preferences");
     button.addActionListener(this);
@@ -140,7 +145,7 @@ public class EadGui extends JFrame implements ActionListener{
     try{
       button = new JButton(new ImageIcon(cl.getResource("images/retrieve.gif")));
     }catch(Exception ex){
-      System.out.println(ex.getMessage());
+      log.error(ex.getMessage());
     }
     button.setActionCommand("retrieve");
     button.addActionListener(this);
@@ -154,7 +159,7 @@ public class EadGui extends JFrame implements ActionListener{
     try{
       processButton = new JButton(new ImageIcon(cl.getResource("images/process.gif")));
     }catch(Exception ex){
-      System.out.println(ex.getMessage());
+      log.error(ex.getMessage());
     }
     processButton.setActionCommand("process");
     processButton.addActionListener(this);
@@ -178,7 +183,7 @@ public class EadGui extends JFrame implements ActionListener{
     try{
       button = new JButton(new ImageIcon(cl.getResource("images/about.gif")));
     }catch(Exception ex){
-      System.out.println(ex.getMessage());
+      log.error(ex.getMessage());
     }
     button.setActionCommand("about");
     button.addActionListener(this);
@@ -251,13 +256,13 @@ public class EadGui extends JFrame implements ActionListener{
       this.preference.set(dp);
       this.preference.setVisible(true);
     }else{
-      System.out.println("PReference window is null");
+      log.debug("PReference window is null");
     }
         
   }
 
   private void retrieve(){
-    System.out.println("Connect and Retrieve The eadid");
+    log.debug("Connect and Retrieve The eadid");
     listModel.removeAllElements();
     EADIDVector.removeAllElements();
     Vector data  = dc.getAllEadId();                
@@ -299,7 +304,7 @@ public class EadGui extends JFrame implements ActionListener{
   }
 
   public void callBack(String id, String message){
-    jta.setText(jta.getText()+"\n Message from converter: "+ message);
+    jta.append("\n Message from converter: "+ message);
   }
 
 
@@ -316,7 +321,7 @@ public class EadGui extends JFrame implements ActionListener{
         
     if (returnVal == JFileChooser.APPROVE_OPTION) {
       File file = fc.getSelectedFile();
-      System.out.println("SAVE FILE HERE "+ file.getAbsolutePath());
+      log.debug("SAVE FILE HERE "+ file.getAbsolutePath());
       FileIO fio = new FileIO();
       String utfData = data.toString();
          

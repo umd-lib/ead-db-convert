@@ -15,9 +15,11 @@
 	   debug="true"
 	   debuglevel="lines,vars,source"
     />
+
     <jar destfile="eaddb.jar">
       <fileset dir="bin" includes="**/*.class"/>
       <fileset dir="." includes="images/**"/>
+      <zipfileset src="lib/log4j-1.2.8.jar"/>
       <manifest>
         <attribute name="Main-Class" value="org.mith.ead.swing.EadDbConvert"/>
       </manifest>
@@ -30,7 +32,9 @@
     <java 
       jar="eaddb.jar"
       fork="true"
-    />
+    >
+      <sysproperty key="ead.debug" value="false"/>
+    </java>
   </target>
 
 

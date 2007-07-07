@@ -30,8 +30,13 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
 import java.sql.Statement;
+
+import java.util.Date;
 import java.util.Random;
 import java.util.Vector;
+
+// log4j
+import org.apache.log4j.Logger;
 
 import org.mith.ead.swing.EadGui;
 
@@ -41,6 +46,8 @@ import org.mith.ead.swing.EadGui;
  */
 public class DataConvertor {
         
+  static Logger log = Logger.getLogger(DataConvertor.class.getName());
+
   private EadGui gui;
 
 
@@ -55,7 +62,7 @@ public class DataConvertor {
   int boxno=0;
   int prev_reel=0;
   Random svcRand = new Random();
-        
+
   public void connect() throws SQLException, ClassNotFoundException{
     try
     {
@@ -66,10 +73,10 @@ public class DataConvertor {
       // Print all warnings
       for( SQLWarning warn = conn.getWarnings(); warn != null; warn = warn.getNextWarning() )
       {
-	System.out.println( "SQL Warning:" ) ;
-	System.out.println( "State  : " + warn.getSQLState()  ) ;
-	System.out.println( "Message: " + warn.getMessage()   ) ;
-	System.out.println( "Error  : " + warn.getErrorCode() ) ;
+	log.debug( "SQL Warning:" ) ;
+	log.debug( "State  : " + warn.getSQLState()  ) ;
+	log.debug( "Message: " + warn.getMessage()   ) ;
+	log.debug( "Error  : " + warn.getErrorCode() ) ;
       }
     }catch( SQLException e )
     {                       
@@ -107,7 +114,8 @@ public class DataConvertor {
     ResultSet rsSubDuplicate = null;
     ResultSet rsBl = null;
 
-                
+    Date start = new Date();
+
     try {
                         
       stmtArch = conn.createStatement();
@@ -121,11 +129,12 @@ public class DataConvertor {
       stmtBl = conn.createStatement();
         
         
-      System.out.println("ONE " + id);        
+      log.info("beginning transform for: " + id);        
+
       //String query =        "SELECT * FROM archdescdid where eadid = "+eadid+";";
       String query = "SELECT * FROM archdescdid where archdescid = "+id+";";
                 
-      System.out.println(query);
+      log.debug(query);
       rsArch = stmtArch.executeQuery(query) ;         
         
         
@@ -152,8 +161,8 @@ public class DataConvertor {
       rsBl = stmtBl.executeQuery("SELECT * FROM BoxList where archdescid ="+id+"");
                                 
     } catch (SQLException e) {
-      System.out.println("Problem running query");
-      System.out.println(e.getMessage());
+      log.error("Problem running query");
+      log.error(e.getMessage());
     }                
                 
                 
@@ -190,7 +199,7 @@ public class DataConvertor {
     if(rsArch != null && rsApl != null)
       archDesc = archDesc + convertToDidXml(rsArch,rsApl,rsGu);
     else
-      System.out.println("Problem: rsArch rsApl rsGu");
+      log.debug("Problem: rsArch rsApl rsGu");
                         
                         
     /* 
@@ -228,7 +237,7 @@ public class DataConvertor {
     if(rsArch != null)
       archDesc = archDesc + convertToDescgrpXml(rsArch);
     else
-      System.out.println("Problem: rsArch DescgrpXml");
+      log.debug("Problem: rsArch DescgrpXml");
                             
                             
 
@@ -247,13 +256,13 @@ public class DataConvertor {
     if(rsArch != null && rsGu != null && rsSe  != null)             
       archDesc = archDesc + convertToArrXml(rsArch,rsSe,rsGu);
     else
-      System.out.println("Problem: ArrXml");
+      log.debug("Problem: ArrXml");
                 
                 
     if(rsSub != null && rsSubDuplicate != null)
       archDesc = archDesc + convertToConXml(rsSub,rsSubDuplicate);
     else
-      System.out.println("Problem: ConXml");
+      log.debug("Problem: ConXml");
                 
                 
                 
@@ -275,7 +284,7 @@ public class DataConvertor {
       rs11 = stmt11.executeQuery(query11);
       int count = 0;
       while(rs11.next()){
-	System.out.println("Here to find BoxList is present or not");   
+	log.debug("Here to find BoxList is present or not");   
 	count++;                
 	doOver = true;
                                 
@@ -299,7 +308,7 @@ public class DataConvertor {
     if(rsSe != null && doOver)
       archDesc = archDesc +convertToDscOverXml(id,rsSe);
     else
-      System.out.println("Problem: OverXml");
+      log.debug("Problem: OverXml");
                                 
                 
                                 
@@ -312,7 +321,7 @@ public class DataConvertor {
     }
                 
         
-    System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");                               
+    log.debug("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");                               
     // check if BoxList table has the entries if yes then only do the in-depth
     boolean doIndepth = false;
     boolean isFrameReel = false;
@@ -369,14 +378,14 @@ public class DataConvertor {
     if(rsSe != null && doIndepth)
       archDesc = archDesc + convertToDscInXml(id,rsSe);
     else
-      System.out.println("Not doing in-depth The BoxList is absent");
+      log.debug("Not doing in-depth The BoxList is absent");
                 
                 
                 
                 
                                 
-    System.out.println("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
-    System.out.println("$$$$$: isFrameReel " + isFrameReel);
+    log.debug("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
+    log.debug("$$$$$: isFrameReel " + isFrameReel);
         
     archDesc = archDesc + "</archdesc>";
                                 
@@ -429,10 +438,15 @@ public class DataConvertor {
       //dc.conn.close();
     } catch (SQLException e1) {
       e1.printStackTrace();
-      System.out.println(e1.getMessage());
+      log.error(e1.getMessage());
     }
                                 
     gui.callBack("","Transformation Completed..");
+
+    Date stop = new Date();
+    int elapsed = (int)((stop.getTime() - start.getTime()) / 1000l);
+    gui.callBack("","Elapsed time: " + elapsed + " seconds");
+
     gui.callBack_saveXmlFile(xmlDoc);
     return xmlDoc;  
   }
@@ -478,7 +492,7 @@ public class DataConvertor {
         
       while(rsSe.next()){
         co2String="";
-        System.out.println("START OF CO1");
+        log.debug("START OF CO1");
                 
         String id = archid;
         String arrangementID = rsSe.getString("arrangementID");
@@ -494,19 +508,19 @@ public class DataConvertor {
         co1String.append("<unitdate>"+seriesdate+"</unitdate>\n");
         co1String.append("<physdesc>"+seriessize+"</physdesc>");
         co1String.append("</did>\n");
-        System.out.println("SERIESTITLE: " + seriestitle);
+        log.debug("SERIESTITLE: " + seriestitle);
         
         if(arrangementID !="" ){
 	  arrangementID= arrangementID.trim();
         }
 	query = "Select * from subseriesdesclist where archdescid ="+archid+" and arrangementID = "+arrangementID+";";
-	System.out.println("QUERY: "+query);
+	log.debug("QUERY: "+query);
         
 	Statement stmt = null;
 	ResultSet rs = null;
 	stmt= this.conn.createStatement();
 	rs = stmt.executeQuery(query);
-	System.out.println("AFTER QUERY");
+	log.debug("AFTER QUERY");
 ///////////////////////////////////////////////c02/////////////////////////////////////////
 
 	//co1String.append("<queryc02>"+query+"</queryc02>");
@@ -520,10 +534,10 @@ public class DataConvertor {
           
           String co3String = "";
           subseries = true;
-          System.out.println("archid: " + archid + " " +" ARRANGEMENT ID: "+arrangementID + "SUBSERIES :"+ subseries);
+          log.debug("archid: " + archid + " " +" ARRANGEMENT ID: "+arrangementID + "SUBSERIES :"+ subseries);
         
-          System.out.println("DOING SUBSERIES : " + archid );
-          System.out.println("ARRANGEMENT ID : " + arrangementID );
+          log.debug("DOING SUBSERIES : " + archid );
+          log.debug("ARRANGEMENT ID : " + arrangementID );
                         
           count++;
           subseriestitle = rs.getString("subseriestitle");
@@ -531,7 +545,7 @@ public class DataConvertor {
           subseriesdate= rs.getString("subseriesdate");
           subseriessize= rs.getString("subseriessize");
           subseriesdesc= rs.getString("subseriesdesc");
-          System.out.println("SUBSERIESTITLE: " + subseriestitle);
+          log.debug("SUBSERIESTITLE: " + subseriestitle);
 
                 
                 
@@ -548,12 +562,12 @@ public class DataConvertor {
 	  query1 = "Select * from BoxList where archdescid = " + archid +" and seriesnumber = "+seriesnumber+" and subseriesnumber ="+subseriesnumber+" ;";
 	  Statement stmtTmp = null;
 	  ResultSet rsTmp = null;
-	  System.out.println("CAME HERE TO FIND REEL/BOX"+query1);
+	  log.debug("CAME HERE TO FIND REEL/BOX"+query1);
 	  stmtTmp= this.conn.createStatement();
 	  rsTmp= stmtTmp.executeQuery(query1);
                         
 	  if(rsTmp==null)
-	    System.out.println("rsTmp is null");
+	    log.debug("rsTmp is null");
                 
 	  String fr="0";
 	  String re = "0";
@@ -572,47 +586,31 @@ public class DataConvertor {
 	      isFrame = false;
 	  }
         
-	  System.out.println("FOUND THAT isFrame is: "+ isFrame);
+	  log.debug("FOUND THAT isFrame is: "+ isFrame);
 
 
 	  rsTmp.close();
 	  stmtTmp.close();
 
-
-
-
-
-                
 	  if(isFrame)
 	    query1 = "Select * from BoxList where archdescid = " + archid +" and seriesnumber = "+seriesnumber+" and subseriesnumber ="+subseriesnumber+" order by reel * 1, frame * 1;";
 	  else
 	    query1 = "Select * from BoxList where archdescid = " + archid +" and seriesnumber = "+seriesnumber+" and subseriesnumber ="+subseriesnumber+" order by box * 1, folder_no * 1;";
                 
-                
-                
 	  boolean resetIsFrame = isFrame;
-                
-                
-                
-                
-                
-                
                 
 	  Statement stmt1 = null;
 	  ResultSet rs1 = null;
-	  System.out.println(query1);
+	  log.debug(query1);
 	  stmt1= this.conn.createStatement();
 	  rs1 = stmt1.executeQuery(query1);
 	  //co2String = co2String + "<queryc03>" + query1 + "</queryc03>";
 	  int countco3=0;
                 
-                
-                
-                
 	  while(rs1.next()){
 	    isFrame = resetIsFrame;
 	    String co4String ="";
-	    System.out.println("GETTING CO3");    
+	    log.debug("GETTING CO3");    
 	    String container="box";
 	    String subcontainer = "folder_no";
 	    String sc = "folder";
@@ -635,7 +633,7 @@ public class DataConvertor {
 	      isFrame = false;
 	      box = rs1.getString(container);
 	      folder = rs1.getString(subcontainer);  
-	      System.out.println("SWITCH A"); 
+	      log.debug("SWITCH A"); 
 	    }else if(!isFrame && box==null){
 	      container = "reel";
 	      subcontainer = "frame";
@@ -643,7 +641,7 @@ public class DataConvertor {
 	      isFrame = true;
 	      box = rs1.getString(container);
 	      folder = rs1.getString(subcontainer);
-	      System.out.println("SWITCH B");   
+	      log.debug("SWITCH B");   
 	    }
                                  
                         
@@ -793,17 +791,17 @@ public class DataConvertor {
 	if(!subseries){
 	  co2String ="";
 	  //      co2String = "<DIDNOTFINDSUBSERIES/>";
-	  System.out.println("OKAY DOES NOT HAVE SUBSERIES NOW WHAT");
+	  log.debug("OKAY DOES NOT HAVE SUBSERIES NOW WHAT");
 ///??????????????????????????????????????????????DELME ?????//////////////////////
 	  query1 = "Select * from BoxList where archdescid = " + archid +" and seriesnumber = "+seriesnumber+" ;";
 	  Statement stmtTmp = null;
 	  ResultSet rsTmp = null;
-	  System.out.println("CAME HERE TO FIND REEL/BOX"+query1);
+	  log.debug("CAME HERE TO FIND REEL/BOX"+query1);
 	  stmtTmp= this.conn.createStatement();
 	  rsTmp= stmtTmp.executeQuery(query1);
                         
 	  if(rsTmp==null)
-	    System.out.println("rsTmp is null");
+	    log.debug("rsTmp is null");
                 
 	  String fr="0";
 	  String re = "0";
@@ -821,7 +819,7 @@ public class DataConvertor {
 	      isFrame = false;
 	  }
         
-	  System.out.println("FOUND THAT isFrame is: "+ isFrame);
+	  log.debug("FOUND THAT isFrame is: "+ isFrame);
 
 
 	  rsTmp.close();
@@ -841,18 +839,18 @@ public class DataConvertor {
                 
 	  // co1String.append("<alternatequeryc02>" +query1+ "</alternatequeryc02>"); 
 
-	  System.out.println("DEBUG: 1 " + query1);
+	  log.debug("DEBUG: 1 " + query1);
 	  Statement stmt1 = null;
 	  ResultSet rs1 = null;
 	  stmt1= this.conn.createStatement();
 	  rs1 = stmt1.executeQuery(query1);
                 
-	  System.out.println("DEBUG: 2 " + query1);
+	  log.debug("DEBUG: 2 " + query1);
 	  int countco2=0;
 	  String co3String="";
                  
 	  while(rs1.next()){
-	    System.out.println("DEBUG: 3 " + query1);
+	    log.debug("DEBUG: 3 " + query1);
 	    isFrame = resetIsFrame;
                         
 	    co3String="";
@@ -864,7 +862,7 @@ public class DataConvertor {
                         
 	    String box = rs1.getString(container);
 	    String folder = rs1.getString(subcontainer);
-	    System.out.println("DEBUG 4: " + container  + " " + subcontainer);
+	    log.debug("DEBUG 4: " + container  + " " + subcontainer);
                         
 	    if(isFrame && box.equals("0")){                         
 	      isFrame = false;
@@ -872,7 +870,7 @@ public class DataConvertor {
 	      sc= subcontainer ="folder_no";
 	      box = rs1.getString(container);
 	      folder = rs1.getString(subcontainer);
-	      System.out.println("DEBUG 4.1a : Switch" + container  + " " + subcontainer);    
+	      log.debug("DEBUG 4.1a : Switch" + container  + " " + subcontainer);    
 	    }else if(!isFrame && box==null){                               
 	      isFrame = true;
 	      container="reel";
@@ -880,12 +878,12 @@ public class DataConvertor {
                                          
 	      box = rs1.getString(container);
 	      folder = rs1.getString(subcontainer);
-	      System.out.println("DEBUG 4.1b : Switch" + container  + " " + subcontainer);    
+	      log.debug("DEBUG 4.1b : Switch" + container  + " " + subcontainer);    
 	    }
                                 
                 
                                  
-	    System.out.println("DEBUG 5:");
+	    log.debug("DEBUG 5:");
                         
 	    subseriesnumber = rs1.getString("subseriesnumber");
 	    heading1 = rs1.getString("heading1");
@@ -899,7 +897,7 @@ public class DataConvertor {
 	    restricted = rs1.getString("restricted");
 	    String size = rs1.getString("size");
                          
-	    System.out.println("BOX IS: " + box);
+	    log.debug("BOX IS: " + box);
                         
 	    if(box==null)
 	      box="0";
@@ -1034,13 +1032,13 @@ public class DataConvertor {
         
         
     }catch(Exception ex){
-      System.out.println("c01 error: " + ex.getMessage());    
+      log.error("c01 error: " + ex.getMessage());    
     }
         
         
-    System.out.println("============================================");
+    log.debug("============================================");
     //System.out.println(co1String.toString());
-    System.out.println("============================================");
+    log.debug("============================================");
         
     dscString = dscString + co1String.toString() + "\n</dsc>";
     return dscString;
@@ -1108,7 +1106,7 @@ public class DataConvertor {
 	  didString = didString + rsArch.getString("originationentry");
 	  didString = didString +"</corpname>";
 	}else{
-	  System.out.println("archdescdid!orgnationode not recognized: " +rsArch.getString("orignationdes"));     
+	  log.debug("archdescdid!orgnationode not recognized: " +rsArch.getString("orignationdes"));     
 	}
       }       
                         
@@ -1135,7 +1133,7 @@ public class DataConvertor {
 	String id =     rsRg.getString("resourcegdename");
                 
 	stmttest = conn.createStatement();      
-	System.out.println("BEFORE I DIE: " + id);
+	log.debug("BEFORE I DIE: " + id);
 	rsTest = stmttest.executeQuery("SELECT * FROM rgnames where rguideid ="+id+"");
 	String rgvalue ="";
 	if(rsTest != null)
@@ -1157,7 +1155,7 @@ public class DataConvertor {
                 
         
     }catch(SQLException ex){
-      System.out.println(ex.getMessage());
+      log.error(ex.getMessage());
       ex.printStackTrace();
     }
     return didString;       
@@ -1232,8 +1230,8 @@ public class DataConvertor {
 	continueToDisplayAnalyticOverview = false;
       }
     }catch (SQLException xsql){
-      System.out.println("Problem in convertToDscOverXml");
-      System.out.println(xsql.getMessage());
+      log.error("Problem in convertToDscOverXml");
+      log.error(xsql.getMessage());
     }
                 
     return overString;              
@@ -1342,8 +1340,8 @@ public class DataConvertor {
                         
 
     }catch(SQLException ex){
-      System.out.println("Problem convertToCon: ");
-      System.out.println(ex.getMessage());    
+      log.error("Problem convertToCon: ");
+      log.error(ex.getMessage());    
     }
                 
     if(!emptyControlAccessPeople)
@@ -1461,8 +1459,8 @@ public class DataConvertor {
 
                                 
     }catch(SQLException ex){
-      System.out.println("Problem convertArr: ");
-      System.out.println("EXception is: "+ex.getMessage());   
+      log.error("Problem convertArr: ");
+      log.error("EXception is: "+ex.getMessage());   
     }
                                 
     return arrString;
@@ -1527,7 +1525,7 @@ public class DataConvertor {
                         
                         
     }catch(SQLException ex){
-      System.out.println(ex.getMessage());
+      log.error(ex.getMessage());
       ex.printStackTrace();
     }
 
@@ -1543,8 +1541,8 @@ public class DataConvertor {
       String val = convertToEadHeaderXml(rsArch,rsEp,rsEc);
       return val;
     } catch (SQLException e) {
-      System.out.println("Problem running query");
-      System.out.println(e.getMessage());
+      log.error("Problem running query");
+      log.error(e.getMessage());
     }                       
     return null;
   }
@@ -1702,7 +1700,7 @@ public class DataConvertor {
 	phyString = phyString + "</physloc>\n";
       }
     }catch(SQLException sqe){
-      System.out.println("Error: " +sqe.getMessage());
+      log.error("Error: " +sqe.getMessage());
       //      phyString = phyString + "</physloc>\n"; 
     }
     return phyString;       
@@ -1743,7 +1741,7 @@ public class DataConvertor {
       rsArch.close();
       stmtArch.close();               
     }catch(SQLException sq){
-      System.out.println("Error Getting all the id's " + sq.getMessage());
+      log.error("Error Getting all the id's " + sq.getMessage());
     }
                 
     return result;
