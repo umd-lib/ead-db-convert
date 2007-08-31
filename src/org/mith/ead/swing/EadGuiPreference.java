@@ -18,6 +18,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 
 import javax.swing.ImageIcon;
+import javax.swing.JCheckBox;
 import javax.swing.JButton;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -29,6 +30,7 @@ import javax.swing.JTextField;
 
 // log4j
 import org.apache.log4j.Logger;
+import org.apache.log4j.Priority;
 
 import org.mith.ead.data.DatabaseProperty;
 
@@ -46,6 +48,12 @@ public class EadGuiPreference extends JFrame implements ActionListener{
   JTextField uriTextBox;
   JTextField wspaceTextBox;
   final JFileChooser fc = new JFileChooser();
+  JCheckBox debugBtn = null;
+
+  /**
+   * Constructor.
+   */
+
   public EadGuiPreference(DatabaseProperty dp,EadGui eadgui){
     super("Edit Preferences");
     setDefaultLookAndFeelDecorated(true);
@@ -111,13 +119,14 @@ public class EadGuiPreference extends JFrame implements ActionListener{
    * @param middlePanel
    */
   private void addDataCells(JPanel middlePanel) {
-    
-    JLabel label = new JLabel("Database Url:");
+
     GridBagConstraints gbc = new GridBagConstraints();
+
+    // Database Url
+    JLabel label = new JLabel("Database Url:");
     gbc = set_gbc(gbc,0,0,0,0,GridBagConstraints.HORIZONTAL);
     gbc.insets = new Insets(20,30,0,30);
     middlePanel.add(label,gbc);
-    
     
     uriTextBox = new JTextField(dataproperty.getDatabaseUrl());
     gbc = set_gbc(gbc,0,1,0.5,0,GridBagConstraints.HORIZONTAL);
@@ -125,9 +134,7 @@ public class EadGuiPreference extends JFrame implements ActionListener{
     gbc.insets = new Insets(20,5,0,30);
     middlePanel.add(uriTextBox,gbc);
     
-    
-  
-    
+    // Default Driver
     label = new JLabel("Default Driver: ");
     gbc = set_gbc(gbc,1,0,0,0,GridBagConstraints.HORIZONTAL);
     gbc.insets = new Insets(0,30,0,30);
@@ -140,7 +147,9 @@ public class EadGuiPreference extends JFrame implements ActionListener{
     gbc.ipadx =50;
     gbc.insets = new Insets(0,5,0,30);  
     middlePanel.add(dataList,gbc);
-    
+
+
+    // Workspace Directory
     label = new JLabel("Workspace Directory");
     gbc = set_gbc(gbc,2,0,0,0,GridBagConstraints.HORIZONTAL);
     gbc.insets = new Insets(0,30,0,30);
@@ -152,7 +161,6 @@ public class EadGuiPreference extends JFrame implements ActionListener{
     gbc.insets = new Insets(0,5,0,30);    
     middlePanel.add(wspaceTextBox,gbc);
     
-    
     JButton button = new JButton(new ImageIcon(gui.cl.getResource("images/browse.gif")));
     gbc = set_gbc(gbc,2,2,1,1,GridBagConstraints.NONE);
     gbc.ipadx =20;
@@ -160,8 +168,18 @@ public class EadGuiPreference extends JFrame implements ActionListener{
     button.addActionListener(this);
     button.setActionCommand("browseworkspacedir");    
     middlePanel.add(button,gbc);
+
+    // Debugging
+    JLabel debug = new JLabel("Debugging:");
+    gbc = set_gbc(gbc,3,0,0,0,GridBagConstraints.HORIZONTAL);
+    gbc.insets = new Insets(0,30,0,30);
+    middlePanel.add(debug, gbc);
     
-    
+    debugBtn = new JCheckBox();
+    gbc = set_gbc(gbc,3,1,0.5,0,GridBagConstraints.HORIZONTAL);
+    gbc.ipadx =50;
+    gbc.insets = new Insets(0,5,0,30);
+    middlePanel.add(debugBtn,gbc);
   }
 
 
@@ -246,6 +264,11 @@ public class EadGuiPreference extends JFrame implements ActionListener{
       gui.dp.setProjectDir(wspaceTextBox.getText());
       gui.dp.setDriver((String)dataList.getSelectedValue());
       log.debug("SAVED THE DP");
+
+      log.info("Debugging is set to: " + debugBtn.isSelected());
+      Logger root = Logger.getRootLogger();
+      root.setPriority(debugBtn.isSelected() ? Priority.DEBUG : Priority.INFO);
+
       this.setVisible(false);
       
     }
