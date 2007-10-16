@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.io.File;
 import java.io.UnsupportedEncodingException;
 
+import java.util.Date;
 import java.util.Vector;
 
 import javax.swing.DefaultListModel;
@@ -54,6 +55,7 @@ public class EadGui extends JFrame implements ActionListener{
   JList listEad;
   DefaultListModel listModel;
   JButton processButton;
+  JButton processAllButton;
   Vector EADIDVector;
   MyListCellRenderer mlcr;
   JFileChooser  fc;
@@ -166,19 +168,15 @@ public class EadGui extends JFrame implements ActionListener{
     processButton.setToolTipText("Transform");
     toolBar.add(processButton);
 
-/*      
-        try{
-	processButton = new JButton(new ImageIcon(cl.getResource("images/process-all.gif")));
-	}catch(Exception ex){
-	System.out.println(ex.getMessage());
-	}
-	processButton.setActionCommand("processAll");
-	processButton.addActionListener(this);
-	processButton.setToolTipText("Transform All");
-	toolBar.add(processButton);
-
-*/      
-
+    try{
+      processAllButton = new JButton(new ImageIcon(cl.getResource("images/processAll.gif")));
+    }catch(Exception ex){
+      log.error(ex.getMessage());
+    }
+    processAllButton.setActionCommand("processAll");
+    processAllButton.addActionListener(this);
+    processAllButton.setToolTipText("Transform All");
+    toolBar.add(processAllButton);
 
     try{
       button = new JButton(new ImageIcon(cl.getResource("images/about.gif")));
@@ -225,13 +223,7 @@ public class EadGui extends JFrame implements ActionListener{
 
         
   }
-/**
- * 
- */
-  private void processAll() {
-    // TODO Auto-generated method stub
-        
-  }
+
 /**
  * 
  */
@@ -278,11 +270,13 @@ public class EadGui extends JFrame implements ActionListener{
 
 
 
-  private void process(){
-    String selected = (String)((Couple)listEad.getSelectedValue()).eadid;
+  private void process() {
+    Couple c = (Couple)listEad.getSelectedValue();
+    String selected = (c != null ? c.eadid : null);
+
     if(selected == null || selected == ""){
       JOptionPane.showMessageDialog(this,
-				    "Select a EAD ID to Transform. \n Click on retrieve button to view list.",
+				    "Select an EAD ID to Transform. \n Click on retrieve button to view list.",
 				    "Select EAD ID",
 				    JOptionPane.WARNING_MESSAGE);
 
@@ -299,49 +293,91 @@ public class EadGui extends JFrame implements ActionListener{
       dc.transform(selected_id);
       processButton.setEnabled(true);
     }
-
-        
   }
+
+
+  private void processAll() {
+    // Get the project diretory
+    String projDir = dp.getProjectDir();
+
+    if (projDir == null || projDir.equals("")) {
+      JOptionPane.showMessageDialog(this,
+				    "You must set the Workspace Directory \n under Preferences",
+				    "Missing Workspace Directory",
+				    JOptionPane.WARNING_MESSAGE);
+    } else {  
+      // make sure they really want to do this
+
+      int opt = JOptionPane.showConfirmDialog(this,
+					      "This operation will transform all finding aids and\nplace them in your Workspace Directory\nwith a default name of <eadid>.xml\nAre you sure you want to do this?",
+					      "Transform All?",
+					      JOptionPane.YES_NO_OPTION,
+					      JOptionPane.WARNING_MESSAGE);
+
+      if (opt == JOptionPane.YES_OPTION) {
+	// execute the transformations
+	jta.append("\nTransform All");
+
+	Date start = new Date();
+
+	File fprojDir = new File(projDir);
+
+	// loop through all eadid
+	for(int i=0; i < EADIDVector.size(); i++){
+	  Couple c = (Couple)EADIDVector.elementAt(i);
+
+	  File file = new File(fprojDir, c.eadid + ".xml");
+	  jta.append("\ntransforming: " + file.getAbsolutePath());
+	  jta.repaint();
+
+	  dc.transform(c.archdescid, file);
+	  jta.repaint();
+	}
+
+	Date stop = new Date();
+	int elapsed = (int)((stop.getTime() - start.getTime()) / 1000l);
+	jta.append("\nTransform all elapsed time: " + elapsed + " seconds");
+
+      }
+    }
+  }
+
 
   public void callBack(String id, String message){
     jta.append("\n Message from converter: "+ message);
   }
 
 
-  public void callBack_saveXmlFile(XmlDataBuffer data){
-        
+  public void callBack_saveXmlFile(XmlDataBuffer data) {
+
+    // get the file name from the user
     fc = new JFileChooser();
         
     if(dp.getProjectDir() != null)
       fc.setCurrentDirectory(new File(dp.getProjectDir()));
         
-        
-        
     int returnVal  =fc.showSaveDialog(this);        
-        
+
+    // check if the save was approved
     if (returnVal == JFileChooser.APPROVE_OPTION) {
       File file = fc.getSelectedFile();
-      log.debug("SAVE FILE HERE "+ file.getAbsolutePath());
-      FileIO fio = new FileIO();
-      String utfData = data.toString();
-         
-      String data_val = data.toString();
-      /*data_val = data_val.replace('�','\'');
-	data_val = data_val.replace('�','"');
-	data_val = data_val.replace('�','"');
-	data_val = data_val.replace('�','\'');*/
-        
-      try {
-	utfData = new String(data_val.getBytes("UTF8"),"UTF8");
-      } catch (UnsupportedEncodingException e) {
-	// TODO Auto-generated catch block
-	e.printStackTrace();
-      }
-      // fio.write(file.getAbsolutePath(),data.toString());
-      fio.write(file.getAbsolutePath(),utfData);
-      fio = null;
+
+      callBack_saveXmlFile(data, file);
     }
         
     fc= null;
   }
+
+
+  public void callBack_saveXmlFile(XmlDataBuffer data, File file) {
+        
+    log.debug("SAVE FILE HERE "+ file.getAbsolutePath());
+
+    FileIO fio = new FileIO();
+
+    fio.write(file.getAbsolutePath(), data.toString());
+
+    fio = null;
+  }
+
 }

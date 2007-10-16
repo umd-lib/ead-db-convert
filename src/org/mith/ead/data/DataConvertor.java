@@ -23,6 +23,7 @@
  **/
 package org.mith.ead.data;
 
+import java.io.File;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -91,7 +92,12 @@ public class DataConvertor {
 
 // already connected by the time we reach here
 
-  public XmlDataBuffer transform(String id){
+  public XmlDataBuffer transform(String id) {
+    return transform(id, null);
+  }
+
+
+  public XmlDataBuffer transform(String id, File file) {
     xmlDoc = new XmlDataBuffer();
     Statement stmtArch = null;
     Statement stmtEp= null;
@@ -447,7 +453,12 @@ public class DataConvertor {
     int elapsed = (int)((stop.getTime() - start.getTime()) / 1000l);
     gui.callBack("","Elapsed time: " + elapsed + " seconds");
 
-    gui.callBack_saveXmlFile(xmlDoc);
+    if (file == null) {
+      gui.callBack_saveXmlFile(xmlDoc);
+    } else {
+      gui.callBack_saveXmlFile(xmlDoc, file);
+    }
+
     return xmlDoc;  
   }
         
