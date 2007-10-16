@@ -3,6 +3,7 @@
   <property environment="env"/>
 
   <path id = "classpath">
+    <pathelement path="lib/log4j-1.2.8.jar"/>
     <pathelement path="eaddb.jar"/>
   </path>
 
