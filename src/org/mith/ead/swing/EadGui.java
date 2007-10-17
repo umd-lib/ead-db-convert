@@ -93,7 +93,7 @@ public class EadGui extends JFrame implements ActionListener{
 
     listEad = new JList(listModel);
     listEad.setCellRenderer(mlcr);
-    listEad.setSelectionMode(ListSelectionModel.SINGLE_INTERVAL_SELECTION);
+    listEad.setSelectionMode(ListSelectionModel.MULTIPLE_INTERVAL_SELECTION);
 //listEad.setLayoutOrientation(JList.VERTICAL_WRAP);
 
     JScrollPane scrollList = new JScrollPane(listEad);
@@ -175,7 +175,7 @@ public class EadGui extends JFrame implements ActionListener{
     }
     processAllButton.setActionCommand("processAll");
     processAllButton.addActionListener(this);
-    processAllButton.setToolTipText("Transform All");
+    processAllButton.setToolTipText("Transform Selected");
     toolBar.add(processAllButton);
 
     try{
@@ -309,29 +309,31 @@ public class EadGui extends JFrame implements ActionListener{
       // make sure they really want to do this
 
       int opt = JOptionPane.showConfirmDialog(this,
-					      "This operation will transform all finding aids and\nplace them in your Workspace Directory\nwith a default name of <eadid>.xml\nAre you sure you want to do this?",
-					      "Transform All?",
+					      "This operation will transform all selected finding aids and\nplace them in your Workspace Directory\nwith a default name of <eadid>.xml\nAre you sure you want to do this?",
+					      "Transform All Selected?",
 					      JOptionPane.YES_NO_OPTION,
 					      JOptionPane.WARNING_MESSAGE);
 
       if (opt == JOptionPane.YES_OPTION) {
+	// get all selected
+	
+	Object selected[] = listEad.getSelectedValues();
+
 	// execute the transformations
-	jta.append("\nTransform All");
+	jta.append("\nTransform Selected");
 
 	Date start = new Date();
 
 	File fprojDir = new File(projDir);
 
 	// loop through all eadid
-	for(int i=0; i < EADIDVector.size(); i++){
-	  Couple c = (Couple)EADIDVector.elementAt(i);
+	for(int i=0; i < selected.length; i++){
+	  Couple c = (Couple)selected[i];
 
 	  File file = new File(fprojDir, c.eadid + ".xml");
 	  jta.append("\ntransforming: " + file.getAbsolutePath());
-	  jta.repaint();
 
 	  dc.transform(c.archdescid, file);
-	  jta.repaint();
 	}
 
 	Date stop = new Date();
