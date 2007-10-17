@@ -1267,35 +1267,36 @@ public class DataConvertor {
       conStringSubject = conStringSubject + "<head>Subjects</head>";
       while(rsSub.next()){
 	String marc = rsSub.getString("MARC");
-                        
-	if(marc.startsWith("600")){ 
-	  String topic = rsSub.getString("topic");
-	  conStringSubject = conStringSubject +"<persname role=\"subject\" encodinganalog=\""+marc+"\">"+topic+"</persname>";
-	  //<!--these <corpname> and <subject> tags are repeatable--!>
-	  emptyControlAccessSubject = false;
-	}
-                        
 
-	if(marc.startsWith("610")){ 
-	  String topic = rsSub.getString("topic");
-	  conStringSubject = conStringSubject +"<corpname role=\"subject\" encodinganalog=\""+marc+"\">"+topic+"</corpname>";
-	  //<!--these <corpname> and <subject> tags are repeatable--!>
-	  emptyControlAccessSubject = false;
-	}
+	if (marc != null) {
+	  if(marc.startsWith("600")){ 
+	    String topic = rsSub.getString("topic");
+	    conStringSubject = conStringSubject +"<persname role=\"subject\" encodinganalog=\""+marc+"\">"+topic+"</persname>";
+	    //<!--these <corpname> and <subject> tags are repeatable--!>
+	    emptyControlAccessSubject = false;
+	  }
                         
-	if(marc.startsWith("650")){ 
-	  String topic = rsSub.getString("topic");
-	  conStringSubject = conStringSubject +"<subject encodinganalog=\""+marc+"\">"+topic+"</subject>";
-	  //<!--these <corpname> and <subject> tags are repeatable--!>
-	  emptyControlAccessSubject = false;
-	}
-                
-	if(marc.startsWith("651")){ 
-	  String topic = rsSub.getString("topic");
-	  conStringSubject = conStringSubject +"<geogname role=\"subject\" encodinganalog=\""+marc+"\">"+topic+"</geogname>";
-	  //<!--these <corpname> and <subject> tags are repeatable--!>
-	  emptyControlAccessSubject = false;
-	}
+	  
+	  if(marc.startsWith("610")){ 
+	    String topic = rsSub.getString("topic");
+	    conStringSubject = conStringSubject +"<corpname role=\"subject\" encodinganalog=\""+marc+"\">"+topic+"</corpname>";
+	    //<!--these <corpname> and <subject> tags are repeatable--!>
+	    emptyControlAccessSubject = false;
+	  }
+	  
+	  if(marc.startsWith("650")){ 
+	    String topic = rsSub.getString("topic");
+	    conStringSubject = conStringSubject +"<subject encodinganalog=\""+marc+"\">"+topic+"</subject>";
+	    //<!--these <corpname> and <subject> tags are repeatable--!>
+	    emptyControlAccessSubject = false;
+	  }
+	  
+	  if(marc.startsWith("651")){ 
+	    String topic = rsSub.getString("topic");
+	    conStringSubject = conStringSubject +"<geogname role=\"subject\" encodinganalog=\""+marc+"\">"+topic+"</geogname>";
+	    //<!--these <corpname> and <subject> tags are repeatable--!>
+	    emptyControlAccessSubject = false;
+	  }
 	//commented by Amit Kumar on April 17th 2005
                         
         /*      
@@ -1313,7 +1314,7 @@ public class DataConvertor {
 		emptyControlAccessSubject = false;
 		}
 	*/      
-                                                
+	}                                     
       }
       conStringSubject = conStringSubject +"</controlaccess>\n";
                 
@@ -1326,21 +1327,22 @@ public class DataConvertor {
       while(rsSubDuplicate.next()){
 	String marc = rsSubDuplicate.getString("MARC");
                         
-	if(marc.startsWith("700")){ 
+	if (marc != null) {
+	  if(marc.startsWith("700")){ 
                                 
-	  conStringPeople = conStringPeople + "<persname role=\"subject\" encodinganalog=\""+marc+"\">";
-	  String topic = rsSubDuplicate.getString("topic");
-	  conStringPeople = conStringPeople +topic+"</persname>\n";
-	  emptyControlAccessPeople = false;
-	}
-	if(marc.startsWith("710")){ 
-	  String topic = rsSubDuplicate.getString("topic");
-	  conStringPeople  = conStringPeople  +"<corpname role=\"subject\" encodinganalog=\""+marc+"\">"+topic+"</corpname>";
-	  //<!--these <corpname> and <subject> tags are repeatable--!>
-	  emptyControlAccessSubject = false;
-	}
+	    conStringPeople = conStringPeople + "<persname role=\"subject\" encodinganalog=\""+marc+"\">";
+	    String topic = rsSubDuplicate.getString("topic");
+	    conStringPeople = conStringPeople +topic+"</persname>\n";
+	    emptyControlAccessPeople = false;
+	  }
+	  if(marc.startsWith("710")){ 
+	    String topic = rsSubDuplicate.getString("topic");
+	    conStringPeople  = conStringPeople  +"<corpname role=\"subject\" encodinganalog=\""+marc+"\">"+topic+"</corpname>";
+	    //<!--these <corpname> and <subject> tags are repeatable--!>
+	    emptyControlAccessSubject = false;
+	  }
                                 
-                                
+	}                     
       }
       conStringPeople = conStringPeople +"</controlaccess>\n";
                 
