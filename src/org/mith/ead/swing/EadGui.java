@@ -332,6 +332,7 @@ public class EadGui extends JFrame implements ActionListener{
 
 	  File file = new File(fprojDir, c.eadid + ".xml");
 	  jta.append("\ntransforming: " + file.getAbsolutePath());
+	  jta.paintImmediately(jta.getBounds());
 
 	  dc.transform(c.archdescid, file);
 	}
