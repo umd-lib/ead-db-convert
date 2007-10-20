@@ -17,6 +17,13 @@
 	   debuglevel="lines,vars,source"
     />
 
+    <javac srcdir="test/src" 
+           destdir="bin"
+           classpathref="classpath"
+	   debug="true"
+	   debuglevel="lines,vars,source"
+    />
+
     <jar destfile="eaddb.jar">
       <fileset dir="bin" includes="**/*.class"/>
       <fileset dir="." includes="images/**"/>
@@ -28,12 +35,35 @@
   </target>
 
 
-  <!-- Test -->
-  <target name="test" depends="compile">
+  <!-- Run -->
+  <target name="run" depends="compile">
     <java 
       jar="eaddb.jar"
       fork="true"
     >
+    </java>
+  </target>
+
+
+  <!-- Test -->
+  <target name="test" depends="compile">
+    <java 
+      classname="org.mith.ead.data.Test"
+      fork="true"
+      classpathref="classpath"
+    >
+    </java>
+  </target>
+
+
+  <!-- Profile -->
+  <target name="profile" depends="compile">
+    <java 
+      jar="eaddb.jar"
+      dir="c:\program files\ejp\lib"
+      fork="true"
+    >
+      <jvmarg value="-Xruntracer"/>
       <sysproperty key="ead.debug" value="false"/>
     </java>
   </target>

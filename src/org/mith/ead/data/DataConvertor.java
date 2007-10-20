@@ -1,26 +1,3 @@
-/*
- * EAD Project at Maryland
- * Created on Feb 7, 2004 by Amit
- * @modified 2-18-2004 by Amit
- * @modified 3-04-2004 by Amit
- * @modified 3-08-2004 by Amit
- * @modified 3-09-2004 by Amit
- * @modified 3-26-2004 by Amit
- * @modified 3-29-2004 by Amit
- * @modified 04-07-2004 by Amit
- * @modified 04-13-2004 by Amit
- * @modified 07-29-2004 by Amit
- * @modified 10-25-2004 by Amit
- * @modified 10-29-2004 by Amit
- * @modified 11-03-2004 by Amit
- * @modified 12-01-2004 by Amit
- * @modified 12-08-2004 by Amit
- * @modified 12-18-2004 by Amit
- * 
- * @last-modified 04-17-2005 by Amit
- *  
- * 
- **/
 package org.mith.ead.data;
 
 import java.io.File;
@@ -71,13 +48,15 @@ public class DataConvertor {
       Class.forName( dp.getDriver() ) ;
       // Get a connection to the database
       this.conn = DriverManager.getConnection( dp.getDatabaseUrl() ) ;
+      this.conn.setReadOnly(true);
+
       // Print all warnings
       for( SQLWarning warn = conn.getWarnings(); warn != null; warn = warn.getNextWarning() )
       {
-	log.debug( "SQL Warning:" ) ;
-	log.debug( "State  : " + warn.getSQLState()  ) ;
-	log.debug( "Message: " + warn.getMessage()   ) ;
-	log.debug( "Error  : " + warn.getErrorCode() ) ;
+        log.debug( "SQL Warning:" ) ;
+        log.debug( "State  : " + warn.getSQLState()  ) ;
+        log.debug( "Message: " + warn.getMessage()   ) ;
+        log.debug( "Error  : " + warn.getErrorCode() ) ;
       }
     }catch( SQLException e )
     {                       
@@ -290,16 +269,16 @@ public class DataConvertor {
       rs11 = stmt11.executeQuery(query11);
       int count = 0;
       while(rs11.next()){
-	log.debug("Here to find BoxList is present or not");   
-	count++;                
-	doOver = true;
+        log.debug("Here to find BoxList is present or not");   
+        count++;                
+        doOver = true;
                                 
       }       
       if(rs11 != null)
-	rs11.close();
+        rs11.close();
                                 
       if(stmt11 != null)
-	stmt11.close();
+        stmt11.close();
                                 
                         
                                 
@@ -339,32 +318,32 @@ public class DataConvertor {
       rs1 = stmt1.executeQuery(query1);
       int count = 0;
       while(rs1.next()){
-	//              System.out.println("Here to find BoxList is present or not");
-	String fr  = rs1.getString("frame");
-	String re = rs1.getString("reel");
+        //              System.out.println("Here to find BoxList is present or not");
+        String fr  = rs1.getString("frame");
+        String re = rs1.getString("reel");
                                 
-	// 05-04-2004 frame number can be null but
-	// reel can not be so checking if reel has a value
-	// frame can be null
-	if(re != null)
-	  isFrameReel = true;
+        // 05-04-2004 frame number can be null but
+        // reel can not be so checking if reel has a value
+        // frame can be null
+        if(re != null)
+          isFrameReel = true;
                                 
-	// 07-06-2004 reel can be 0
-	if(isFrameReel){
-	  if(fr == null && re.startsWith("0"))
-	    isFrameReel = false;
-	}
+        // 07-06-2004 reel can be 0
+        if(isFrameReel){
+          if(fr == null && re.startsWith("0"))
+            isFrameReel = false;
+        }
                                 
                                         
-	count++;                
-	doIndepth = true;
+        count++;                
+        doIndepth = true;
                                 
       }       
       if(rs1 != null)
-	rs1.close();
+        rs1.close();
                                 
       if(stmt1 != null)
-	stmt1.close();
+        stmt1.close();
                                 
                         
                                 
@@ -404,30 +383,30 @@ public class DataConvertor {
                 
     try {
       if(rsArch != null)                                      
-	rsArch.close() ;
+        rsArch.close() ;
       if(rsEp != null)
-	rsEp.close();
+        rsEp.close();
       if(rsEc != null)
-	rsEc.close();
+        rsEc.close();
       if(rsApl != null)
-	rsApl.close();
+        rsApl.close();
                                         
 
       if(rsGu != null)
-	rsGu.close();
+        rsGu.close();
                                         
       if(rsSe != null)
-	rsSe.close();
+        rsSe.close();
                                         
       if(rsSub != null)
-	rsSub.close();
+        rsSub.close();
                         
       if(rsSubDuplicate != null)
-	rsSubDuplicate.close();
+        rsSubDuplicate.close();
 
 
       if(rsBl != null)
-	rsBl.close();
+        rsBl.close();
 
 
 
@@ -463,335 +442,304 @@ public class DataConvertor {
   }
         
 
+private String convertToDscInXml(String archid, ResultSet rsSe) {
+  StringBuffer dscString = new StringBuffer(2048);
+  
+  Statement stmt3 = null;
+  ResultSet rs3 = null;
+  String query,query1,query2;
+  String heading1,heading2, heading3, heading4, heading5, heading6, heading7, heading8, restricted; 
+  String subseriestitle,subseriesnumber,subseriesdate,subseriessize,subseriesdesc;
+  String item_no, h,d, s, r = null;
+  
+  boxno=0;
+  prev_reel =0;
+  boolean isFrame=false;
+  
+  dscString.append("<dsc type=\"in-depth\" id=\""+getUnique("dsc_")+"\">\n");
+  
+  try {
 
+    // foreach row in BoxList
+    while(rsSe.next()) { 
+      
+      // build CO1 (series)
+      log.debug("START OF CO1");
+      
+      String id = archid;
+      String arrangementID = rsSe.getString("arrangementID");
+      String seriesnumber = rsSe.getString("seriesnumber");
+      dscString.append("\n<c01 level='series' id='series"+seriesnumber+"'>\n");
+      
+      String seriestitle = rsSe.getString("seriestitle");
+      String seriesdate= rsSe.getString("seriesdate");
+      String seriessize= rsSe.getString("seriessize");
+      String seriesdesc= rsSe.getString("seriesdesc");
+      
+      dscString.append("<did>\n");
+      dscString.append("<unittitle>"+seriestitle+"</unittitle>\n");
+      dscString.append("<unitdate>"+seriesdate+"</unitdate>\n");
+      dscString.append("<physdesc>"+seriessize+"</physdesc>");
+      dscString.append("</did>\n");
 
-
-
-
-
-
-
-
-
-
-
-
-  private String convertToDscInXml(String archid, ResultSet rsSe) {
-    String dscString="";
-    StringBuffer co1String= new StringBuffer();
-    String co2String="";
-    Statement stmt3 = null;
-    ResultSet rs3 = null;
-    String query,query1,query2;
-    String heading1,heading2, heading3, heading4, heading5, heading6, heading7, heading8, restricted; 
-    String subseriestitle,subseriesnumber,subseriesdate,subseriessize,subseriesdesc;
-    String item_no, h,d, s, r = null;
-                                
-    //CO3 STUFF HERE
-    Statement stmt2 = null;
-    ResultSet rs2 = null;
-    // END CO3      
-    boxno=0;
-    prev_reel =0;
-    boolean isFrame=false;
+      log.debug("SERIESTITLE: " + seriestitle);
         
-    dscString = "<dsc type=\"in-depth\" id=\""+getUnique("dsc_")+"\">\n";
-        
-        
-    try{
-        
-        
-      while(rsSe.next()){
-        co2String="";
-        log.debug("START OF CO1");
-                
-        String id = archid;
-        String arrangementID = rsSe.getString("arrangementID");
-        String seriesnumber = rsSe.getString("seriesnumber");
-        co1String.append("\n<c01 level='series' id='series"+seriesnumber+"'>\n");
-        
-        String seriestitle = rsSe.getString("seriestitle");
-        String seriesdate= rsSe.getString("seriesdate");
-        String seriessize= rsSe.getString("seriessize");
-        String seriesdesc= rsSe.getString("seriesdesc");
-        co1String.append("<did>\n");
-        co1String.append("<unittitle>"+seriestitle+"</unittitle>\n");
-        co1String.append("<unitdate>"+seriesdate+"</unitdate>\n");
-        co1String.append("<physdesc>"+seriessize+"</physdesc>");
-        co1String.append("</did>\n");
-        log.debug("SERIESTITLE: " + seriestitle);
-        
-        if(arrangementID !="" ){
-	  arrangementID= arrangementID.trim();
-        }
-	query = "Select * from subseriesdesclist where archdescid ="+archid+" and arrangementID = "+arrangementID+";";
-	log.debug("QUERY: "+query);
-        
-	Statement stmt = null;
-	ResultSet rs = null;
-	stmt= this.conn.createStatement();
-	rs = stmt.executeQuery(query);
-	log.debug("AFTER QUERY");
-///////////////////////////////////////////////c02/////////////////////////////////////////
+      if(arrangementID !="" ){
+	arrangementID= arrangementID.trim();
+      }
 
-	//co1String.append("<queryc02>"+query+"</queryc02>");
-
-
-	boolean subseries = false;
-	int count=0;
-	co2String = "";       
+      // build CO2 (subseries)
+      query = "Select * from subseriesdesclist where archdescid ="+archid+" and arrangementID = "+arrangementID+";";
+      log.debug("QUERY: "+query);
+        
+      Statement stmt = null;
+      ResultSet rs = null;
+      stmt= this.conn.createStatement();
+      rs = stmt.executeQuery(query);
+      log.debug("AFTER QUERY");
+      
+      boolean subseries = false;
+      int count=0;
           
-	while(rs.next()){
+      while(rs.next()) {
           
-          String co3String = "";
-          subseries = true;
-          log.debug("archid: " + archid + " " +" ARRANGEMENT ID: "+arrangementID + "SUBSERIES :"+ subseries);
+	// subseries
+	subseries = true;
+	log.debug("archid: " + archid + " " +" ARRANGEMENT ID: "+arrangementID + "SUBSERIES :"+ subseries);
         
-          log.debug("DOING SUBSERIES : " + archid );
-          log.debug("ARRANGEMENT ID : " + arrangementID );
+	log.debug("DOING SUBSERIES : " + archid );
+	log.debug("ARRANGEMENT ID : " + arrangementID );
                         
-          count++;
-          subseriestitle = rs.getString("subseriestitle");
-          subseriesnumber= rs.getString("subseriesnumber");
-          subseriesdate= rs.getString("subseriesdate");
-          subseriessize= rs.getString("subseriessize");
-          subseriesdesc= rs.getString("subseriesdesc");
-          log.debug("SUBSERIESTITLE: " + subseriestitle);
-
-                
-                
-          // subseries is present now make the CO2 and then get the CO3/C04
-          co2String = co2String + "<c02 level='subseries' id='subseries"+seriesnumber+"."+subseriesnumber+"'>";
-          co2String = co2String + "<did><unittitle>"+subseriestitle+"</unittitle>\n";
-          co2String = co2String + "<unitdate>"+subseriesdate+"</unitdate>\n";
-          if(subseriessize !=null)
-	    co2String = co2String + "<physdesc>"+subseriessize+"</physdesc>\n";
-          co2String = co2String + "</did>\n";
+	count++;
+	subseriestitle = rs.getString("subseriestitle");
+	subseriesnumber= rs.getString("subseriesnumber");
+	subseriesdate= rs.getString("subseriesdate");
+	subseriessize= rs.getString("subseriessize");
+	subseriesdesc= rs.getString("subseriesdesc");
+	log.debug("SUBSERIESTITLE: " + subseriestitle);
+	
+	
+	
+	// subseries is present now make the CO2 and then get the CO3/C04
+	dscString.append("<c02 level='subseries' id='subseries"+seriesnumber+"."+subseriesnumber+"'>");
+	dscString.append("<did><unittitle>"+subseriestitle+"</unittitle>\n");
+	dscString.append("<unitdate>"+subseriesdate+"</unitdate>\n");
+	if(subseriessize !=null) {
+	  dscString.append("<physdesc>"+subseriessize+"</physdesc>\n");
+	}
+	dscString.append("</did>\n");
           
-          //////////////////////////////////////c03////////////////////////////////
 
-	  query1 = "Select * from BoxList where archdescid = " + archid +" and seriesnumber = "+seriesnumber+" and subseriesnumber ="+subseriesnumber+" ;";
-	  Statement stmtTmp = null;
-	  ResultSet rsTmp = null;
-	  log.debug("CAME HERE TO FIND REEL/BOX"+query1);
-	  stmtTmp= this.conn.createStatement();
-	  rsTmp= stmtTmp.executeQuery(query1);
+	query1 = "Select * from BoxList where archdescid = " + archid +" and seriesnumber = "+seriesnumber+" and subseriesnumber ="+subseriesnumber+" ;";
+	Statement stmtTmp = null;
+	ResultSet rsTmp = null;
+	log.debug("CAME HERE TO FIND REEL/BOX"+query1);
+	stmtTmp= this.conn.createStatement();
+	rsTmp= stmtTmp.executeQuery(query1);
                         
-	  if(rsTmp==null)
-	    log.debug("rsTmp is null");
+	if(rsTmp==null)
+	  log.debug("rsTmp is null");
                 
-	  String fr="0";
-	  String re = "0";
-	  while(rsTmp.next()){
-	    fr= rsTmp.getString("frame");
-	    re = rsTmp.getString("reel");
-	  }
+	String fr="0";
+	String re = "0";
+	while(rsTmp.next()){
+	  fr= rsTmp.getString("frame");
+	  re = rsTmp.getString("reel");
+	}
                 
-                                
-	  if(re != null)
-	    isFrame = true;
+	
+	if(re != null)
+	  isFrame = true;
         
         
-	  if(isFrame){
-	    if(fr == null && re.startsWith("0"))
-	      isFrame = false;
-	  }
+	if(isFrame){
+	  if(fr == null && re.startsWith("0"))
+	    isFrame = false;
+	}
         
-	  log.debug("FOUND THAT isFrame is: "+ isFrame);
+	log.debug("FOUND THAT isFrame is: "+ isFrame);
 
 
-	  rsTmp.close();
-	  stmtTmp.close();
+	rsTmp.close();
+	stmtTmp.close();
 
+	if(isFrame)
+	  query1 = "Select * from BoxList where archdescid = " + archid +" and seriesnumber = "+seriesnumber+" and subseriesnumber ="+subseriesnumber+" order by reel * 1, frame * 1;";
+	else
+	  query1 = "Select * from BoxList where archdescid = " + archid +" and seriesnumber = "+seriesnumber+" and subseriesnumber ="+subseriesnumber+" order by box * 1, folder_no * 1;";
+                
+	boolean resetIsFrame = isFrame;
+	
+	Statement stmt1 = null;
+	ResultSet rs1 = null;
+	log.debug(query1);
+	stmt1= this.conn.createStatement();
+	rs1 = stmt1.executeQuery(query1);
+
+	int countco3=0;
+                
+	while(rs1.next()) {
+	  isFrame = resetIsFrame;
+
+	  log.debug("GETTING CO3");    
+	  String container="box";
+	  String subcontainer = "folder_no";
+	  String sc = "folder";
 	  if(isFrame)
-	    query1 = "Select * from BoxList where archdescid = " + archid +" and seriesnumber = "+seriesnumber+" and subseriesnumber ="+subseriesnumber+" order by reel * 1, frame * 1;";
-	  else
-	    query1 = "Select * from BoxList where archdescid = " + archid +" and seriesnumber = "+seriesnumber+" and subseriesnumber ="+subseriesnumber+" order by box * 1, folder_no * 1;";
-                
-	  boolean resetIsFrame = isFrame;
-                
-	  Statement stmt1 = null;
-	  ResultSet rs1 = null;
-	  log.debug(query1);
-	  stmt1= this.conn.createStatement();
-	  rs1 = stmt1.executeQuery(query1);
-	  //co2String = co2String + "<queryc03>" + query1 + "</queryc03>";
-	  int countco3=0;
-                
-	  while(rs1.next()){
-	    isFrame = resetIsFrame;
-	    String co4String ="";
-	    log.debug("GETTING CO3");    
-	    String container="box";
-	    String subcontainer = "folder_no";
-	    String sc = "folder";
-	    if(isFrame)
-	    {
-	      container = "reel";
-	      subcontainer = "frame";
-	      sc="frame";
-	    }
+	  {
+	    container = "reel";
+	    subcontainer = "frame";
+	    sc="frame";
+	  }
                         
                                  
                         
-	    String box = rs1.getString(container);
-	    String folder = rs1.getString(subcontainer);
+	  String box = rs1.getString(container);
+	  String folder = rs1.getString(subcontainer);
                                 
-	    if(isFrame && box.equals("0")){
-	      container = "box";
-	      subcontainer = "folder_no";
-	      sc="folder_no";
-	      isFrame = false;
-	      box = rs1.getString(container);
-	      folder = rs1.getString(subcontainer);  
-	      log.debug("SWITCH A"); 
-	    }else if(!isFrame && box==null){
-	      container = "reel";
-	      subcontainer = "frame";
-	      sc="frame";
-	      isFrame = true;
-	      box = rs1.getString(container);
-	      folder = rs1.getString(subcontainer);
-	      log.debug("SWITCH B");   
-	    }
+	  if(isFrame && box.equals("0")){
+	    container = "box";
+	    subcontainer = "folder_no";
+	    sc="folder_no";
+	    isFrame = false;
+	    box = rs1.getString(container);
+	    folder = rs1.getString(subcontainer);  
+	    log.debug("SWITCH A"); 
+	  }else if(!isFrame && box==null){
+	    container = "reel";
+	    subcontainer = "frame";
+	    sc="frame";
+	    isFrame = true;
+	    box = rs1.getString(container);
+	    folder = rs1.getString(subcontainer);
+	    log.debug("SWITCH B");   
+	  }
                                  
                         
                                  
                         
 //                               Added 3rd Nov 2004 the subseries and series number are linked to the co4
-	    String series_number_co3 = rs1.getString("seriesnumber");
-	    String subseries_number_co3 = rs1.getString("subseriesnumber");
+	  String series_number_co3 = rs1.getString("seriesnumber");
+	  String subseries_number_co3 = rs1.getString("subseriesnumber");
                 
-	    // Added 14 th of March the size  which will display (or not) physdesc
-	    String size = rs1.getString("size");
+	  // Added 14 th of March the size  which will display (or not) physdesc
+	  String size = rs1.getString("size");
                         
-	    heading1 = rs1.getString("heading1");
-	    heading2 = rs1.getString("heading2");
-	    heading3 = rs1.getString("heading3");
-	    heading4 = rs1.getString("heading4");
-	    heading5 = rs1.getString("heading5");
-	    heading6 = rs1.getString("heading6");
-	    heading7 = rs1.getString("heading7");
-	    heading8 = rs1.getString("heading8");
+	  heading1 = rs1.getString("heading1");
+	  heading2 = rs1.getString("heading2");
+	  heading3 = rs1.getString("heading3");
+	  heading4 = rs1.getString("heading4");
+	  heading5 = rs1.getString("heading5");
+	  heading6 = rs1.getString("heading6");
+	  heading7 = rs1.getString("heading7");
+	  heading8 = rs1.getString("heading8");
                         
                         
-	    String date = rs1.getString("date");
-	    restricted = rs1.getString("restricted");
+	  String date = rs1.getString("date");
+	  restricted = rs1.getString("restricted");
                         
-	    box = (new Integer(new Double(box).intValue())).toString();
-                        
-	    //Added 3rd Nov 2004 the CO$ is linked with the CO3 -- archdescid, series,subseries,box and folder_no
-	    query2 = "Select * from ItemList where archdescid = " + archid +" and series = " + series_number_co3 + "  and subseries = " + subseries_number_co3 + " and box = " + box + " and folder_no = " + folder + " ;";
-	    //JENNIE WORKING ON LINE query2 = "Select * from ItemList where archdescid = " + archid +" and BoxListID = " + boxid + " ;";
-	    stmt2 = null;
-	    rs2 = null;
-	    stmt2= this.conn.createStatement();
-	    rs2 = stmt2.executeQuery(query2);
+	  box = (new Integer(new Double(box).intValue())).toString();
+	  
+	  //Added 3rd Nov 2004 the CO$ is linked with the CO3 -- archdescid, series,subseries,box and folder_no
+	  query2 = "Select * from ItemList where archdescid = " + archid +" and series = " + series_number_co3 + "  and subseries = " + subseries_number_co3 + " and box = " + box + " and folder_no = " + folder + " ;";
+	  //JENNIE WORKING ON LINE query2 = "Select * from ItemList where archdescid = " + archid +" and BoxListID = " + boxid + " ;";
+
+	  Statement stmt2= this.conn.createStatement();
+	  ResultSet rs2 = stmt2.executeQuery(query2);
                                  
-                        
-	    co3String = co3String + "<c03 level='file'>\n<did>\n";
+	  dscString.append("<c03 level='file'>\n<did>\n");
                 
-                
-	    if(isFrame){
-	      if((new Integer(box)).intValue() != prev_reel){
-		prev_reel = (new Integer(box)).intValue();
-		co3String = co3String +"<container id='reel"+prev_reel+"."+box+"' type='reel'>"+prev_reel+"</container>\n";
+	  if(isFrame){
+	    if((new Integer(box)).intValue() != prev_reel){
+	      prev_reel = (new Integer(box)).intValue();
+	      dscString.append("<container id='reel"+prev_reel+"."+box+"' type='reel'>"+prev_reel+"</container>\n");
 //                                                when both reel/frame and box folder this will create problem
-		boxno=prev_reel;
+	      boxno=prev_reel;
 
-	      }
+	    }
                                 
-	    }else{
+	  } else {
                         
                         
-	      if(folder.equals("1.0") || folder.equals("1")){
-		boxno++;
-		co3String = co3String +"<container id='box"+boxno+"."+box+"' type='box'>"+box+"</container>\n";
-	      }
-                        
+	    if(folder.equals("1.0") || folder.equals("1")){
+	      boxno++;
+	      dscString.append("<container id='box"+boxno+"."+box+"' type='box'>"+box+"</container>\n");
 	    }
                         
-	    co3String = co3String +"<container parent='"+container+boxno+"."+box+"' type='"+sc+"'>"+folder+"</container>\n";
-	    co3String = co3String +"<unittitle>"+heading1;
+	  }
                         
-	    if(heading2!=null)
-	      co3String = co3String + " -- " + heading2;
+	  dscString.append("<container parent='"+container+boxno+"."+box+"' type='"+sc+"'>"+folder+"</container>\n");
+	  dscString.append("<unittitle>"+heading1);
                         
-	    if(heading3!=null)
-	      co3String = co3String + " -- " + heading3;
+	  if(heading2!=null)
+	    dscString.append( " -- " + heading2);
                         
-	    if(heading4!=null)
-	      co3String = co3String + " -- " + heading4;
+	  if(heading3!=null)
+	    dscString.append( " -- " + heading3);
+	  
+	  if(heading4!=null)
+	    dscString.append( " -- " + heading4);
                         
-	    if(heading5!=null)
-	      co3String = co3String + " -- " + heading5;
+	  if(heading5!=null)
+	    dscString.append( " -- " + heading5);
                         
-	    if(heading6!=null)
-	      co3String = co3String + " -- " + heading6;
+	  if(heading6!=null)
+	    dscString.append( " -- " + heading6);
                         
-	    if(heading7!=null)
-	      co3String = co3String + " -- " + heading7;
+	  if(heading7!=null)
+	    dscString.append( " -- " + heading7);
                         
-	    if(heading8!=null)
-	      co3String = co3String + " -- " + heading8;
+	  if(heading8!=null)
+	    dscString.append( " -- " + heading8);
                         
                         
                         
-	    co3String = co3String +"</unittitle>\n";
-	    co3String = co3String +"<unitdate>"+date+"</unitdate>\n";
-	    if(size!=null)
-	      co3String = co3String +"<physdesc>"+size+"</physdesc>\n";
-	    co3String = co3String + "</did>\n";
-	    if(restricted.equals("1")){
-	      co3String = co3String+"<accessrestrict><p>Restricted</p></accessrestrict>";   
+	  dscString.append("</unittitle>\n");
+	  dscString.append("<unitdate>"+date+"</unitdate>\n");
+	  if(size!=null)
+	    dscString.append("<physdesc>"+size+"</physdesc>\n");
+	  dscString.append( "</did>\n");
+	  if(restricted.equals("1")){
+	    dscString.append("<accessrestrict><p>Restricted</p></accessrestrict>");   
                                   
-	    }
-	    /////////////////////////////////////co4////////////////////////////////////
-                                        
-	    //              co3String = co3String + "\n<queryc04>"+query2+"</queryc04>\n";
-	    int delme = 0;
-	    while(rs2.next()){
-	      delme++;
-	      item_no = rs2.getString("item no");
-	      h = rs2.getString("heading1");
-	      d = rs2.getString("date");
-	      s = rs2.getString("size");
-	      r = rs2.getString("restricted");
-	      co4String = co4String + "<c04 level='item'><did>\n<container parent='box"+boxno+"."+box+"' type='item'>"+item_no+"</container>\n<unittitle>"+h+"</unittitle>\n<unitdate>"+d+"</unitdate>\n";
+	  }
+	  /////////////////////////////////////co4////////////////////////////////////
+	  
+	  int delme = 0;
+	  while(rs2.next()) {
+	    delme++;
+	    item_no = rs2.getString("item no");
+	    h = rs2.getString("heading1");
+	    d = rs2.getString("date");
+	    s = rs2.getString("size");
+	    r = rs2.getString("restricted");
+	    dscString.append("<c04 level='item'><did>\n<container parent='box"+boxno+"."+box+"' type='item'>"+item_no+"</container>\n<unittitle>"+h+"</unittitle>\n<unitdate>"+d+"</unitdate>\n");
                                                         
-	      if(s != null)
-		co4String = co4String + "<physdesc>"+s+"</physdesc>\n";
+	    if(s != null)
+	      dscString.append("<physdesc>"+s+"</physdesc>\n");
                         
-	      //NEW 9/25/2006                 
-	      co4String = co4String + "</did>\n";
-	      if(r.equals("1")){
-		co4String = co4String+"<accessrestrict><p>Restricted</p></accessrestrict>";}  
-	      co4String = co4String + "\n</c04>\n"; 
-	    }
+	    //NEW 9/25/2006                 
+	    dscString.append("</did>\n");
+	    if(r.equals("1")){
+	      dscString.append("<accessrestrict><p>Restricted</p></accessrestrict>");}  
+	    dscString.append("\n</c04>\n"); 
+	  }
+	  rs2.close();
+	  stmt2.close();
                                                 
-	    //      if(r.equals("1")){
-	    //      co4String = co4String +"<accessrestrict><p>Restricted</p></accessrestrict>";    
-	    //      }
-                                
-	    //co4String = co4String + "\n</did>\n</c04>\n";         
-                                
-	    //} // end of rs2
-                        
-                                                                        
-	    /////////////////////////////////////c04/////////////////////////////////////
+	  /////////////////////////////////////c04/////////////////////////////////////
                                         
                                         
-	    co3String = co3String + co4String+"</c03>\n";
+	  dscString.append("</c03>\n");
                                          
-	  }// end of c03
-          ////////////////////////////////////c03//////////////////////////////////
+	} // end of c03
         
-	  co2String = co2String + co3String;
-	  co2String = co2String  + "</c02>";
-
-
-	}
-        
+	dscString.append("</c02>");
+	
+	
+      }
+      rs.close();
+      stmt.close();
 
 
 //////////////////////////////////c02///////////////////////////////////////////////            
@@ -799,297 +747,237 @@ public class DataConvertor {
 ////////////THE BOXLIST IS THE C02 ////////////////////////////////
 /////////// THE ITEMLIST IS THE C03 //////////////////////////////              
         
-	if(!subseries){
-	  co2String ="";
-	  //      co2String = "<DIDNOTFINDSUBSERIES/>";
-	  log.debug("OKAY DOES NOT HAVE SUBSERIES NOW WHAT");
+      if(!subseries) {
+	// build CO2 (boxlist; there was no subseries)
+
+	log.debug("OKAY DOES NOT HAVE SUBSERIES NOW WHAT");
 ///??????????????????????????????????????????????DELME ?????//////////////////////
-	  query1 = "Select * from BoxList where archdescid = " + archid +" and seriesnumber = "+seriesnumber+" ;";
-	  Statement stmtTmp = null;
-	  ResultSet rsTmp = null;
-	  log.debug("CAME HERE TO FIND REEL/BOX"+query1);
-	  stmtTmp= this.conn.createStatement();
-	  rsTmp= stmtTmp.executeQuery(query1);
-                        
-	  if(rsTmp==null)
-	    log.debug("rsTmp is null");
+	query1 = "Select * from BoxList where archdescid = " + archid +" and seriesnumber = "+seriesnumber+" ;";
+	Statement stmtTmp = null;
+	ResultSet rsTmp = null;
+	log.debug("CAME HERE TO FIND REEL/BOX"+query1);
+	stmtTmp= this.conn.createStatement();
+	rsTmp= stmtTmp.executeQuery(query1);
+	
+	if(rsTmp==null)
+	  log.debug("rsTmp is null");
                 
-	  String fr="0";
-	  String re = "0";
-	  while(rsTmp.next()){
-	    fr= rsTmp.getString("frame");
-	    re = rsTmp.getString("reel");
-	  }
-                                                
-	  if(re != null)
-	    isFrame = true;
+	String fr="0";
+	String re = "0";
+	while(rsTmp.next()){
+	  fr= rsTmp.getString("frame");
+	  re = rsTmp.getString("reel");
+	}
+
+	if(re != null)
+	  isFrame = true;
         
         
-	  if(isFrame){
-	    if(fr == null && re.startsWith("0"))
-	      isFrame = false;
-	  }
+	if(isFrame){
+	  if(fr == null && re.startsWith("0"))
+	    isFrame = false;
+	}
         
-	  log.debug("FOUND THAT isFrame is: "+ isFrame);
+	log.debug("FOUND THAT isFrame is: "+ isFrame);
 
 
-	  rsTmp.close();
-	  stmtTmp.close();
+	rsTmp.close();
+	stmtTmp.close();
 
-	  boolean resetIsFrame = isFrame;
+	boolean resetIsFrame = isFrame;
 
 
 
 
  
                 
-	  if(isFrame)
-	    query1 =  "Select * from BoxList where archdescid = " + archid +" and seriesnumber = "+seriesnumber+" order by reel  * 1, frame * 1;";
-	  else
-	    query1 =  "Select * from BoxList where archdescid = " + archid +" and seriesnumber = "+seriesnumber+" order by box * 1, folder_no * 1;";
+	if(isFrame)
+	  query1 =  "Select * from BoxList where archdescid = " + archid +" and seriesnumber = "+seriesnumber+" order by reel  * 1, frame * 1;";
+	else
+	  query1 =  "Select * from BoxList where archdescid = " + archid +" and seriesnumber = "+seriesnumber+" order by box * 1, folder_no * 1;";
                 
-	  // co1String.append("<alternatequeryc02>" +query1+ "</alternatequeryc02>"); 
-
-	  log.debug("DEBUG: 1 " + query1);
-	  Statement stmt1 = null;
-	  ResultSet rs1 = null;
-	  stmt1= this.conn.createStatement();
-	  rs1 = stmt1.executeQuery(query1);
-                
-	  log.debug("DEBUG: 2 " + query1);
-	  int countco2=0;
-	  String co3String="";
+	log.debug("DEBUG: 1 " + query1);
+	Statement stmt1 = null;
+	ResultSet rs1 = null;
+	stmt1= this.conn.createStatement();
+	rs1 = stmt1.executeQuery(query1);
+	
+	log.debug("DEBUG: 2 (statement created)");
+	int countco2=0;
                  
-	  while(rs1.next()){
-	    log.debug("DEBUG: 3 " + query1);
-	    isFrame = resetIsFrame;
+	while(rs1.next()) {
+	  //log.debug("DEBUG: 3 " + query1);
+	  isFrame = resetIsFrame;
                         
-	    co3String="";
-	    String container="box"; String subcontainer = "folder_no";      String sc="folder";
-	    if(isFrame)
-	    {
-	      container = "reel";     subcontainer = "frame";         sc="frame";
-	    }
+	  String container="box"; String subcontainer = "folder_no";      String sc="folder";
+	  if(isFrame)
+	  {
+	    container = "reel";     subcontainer = "frame";         sc="frame";
+	  }
                         
-	    String box = rs1.getString(container);
-	    String folder = rs1.getString(subcontainer);
-	    log.debug("DEBUG 4: " + container  + " " + subcontainer);
+	  String box = rs1.getString(container);
+	  String folder = rs1.getString(subcontainer);
+	  log.debug("DEBUG 4: " + container  + " " + subcontainer);
                         
-	    if(isFrame && box.equals("0")){                         
-	      isFrame = false;
-	      container="box";
-	      sc= subcontainer ="folder_no";
-	      box = rs1.getString(container);
-	      folder = rs1.getString(subcontainer);
-	      log.debug("DEBUG 4.1a : Switch" + container  + " " + subcontainer);    
-	    }else if(!isFrame && box==null){                               
-	      isFrame = true;
-	      container="reel";
-	      sc= subcontainer ="frame";
+	  if(isFrame && box.equals("0")){                         
+	    isFrame = false;
+	    container="box";
+	    sc= subcontainer ="folder_no";
+	    box = rs1.getString(container);
+	    folder = rs1.getString(subcontainer);
+	    log.debug("DEBUG 4.1a : Switch" + container  + " " + subcontainer);    
+	  }else if(!isFrame && box==null){                               
+	    isFrame = true;
+	    container="reel";
+	    sc= subcontainer ="frame";
                                          
-	      box = rs1.getString(container);
-	      folder = rs1.getString(subcontainer);
-	      log.debug("DEBUG 4.1b : Switch" + container  + " " + subcontainer);    
-	    }
+	    box = rs1.getString(container);
+	    folder = rs1.getString(subcontainer);
+	    log.debug("DEBUG 4.1b : Switch" + container  + " " + subcontainer);    
+	  }
                                 
                 
                                  
-	    log.debug("DEBUG 5:");
+	  log.debug("DEBUG 5:");
                         
-	    subseriesnumber = rs1.getString("subseriesnumber");
-	    heading1 = rs1.getString("heading1");
-	    heading2 = rs1.getString("heading2");
-	    heading3 = rs1.getString("heading3");
-	    heading4 = rs1.getString("heading4");
-	    heading5 = rs1.getString("heading5");
-	    heading6 = rs1.getString("heading6");
-	    heading7 = rs1.getString("heading7");
-	    heading8 = rs1.getString("heading8");
-	    restricted = rs1.getString("restricted");
-	    String size = rs1.getString("size");
-                         
-	    log.debug("BOX IS: " + box);
+	  subseriesnumber = rs1.getString("subseriesnumber");
+	  heading1 = rs1.getString("heading1");
+	  heading2 = rs1.getString("heading2");
+	  heading3 = rs1.getString("heading3");
+	  heading4 = rs1.getString("heading4");
+	  heading5 = rs1.getString("heading5");
+	  heading6 = rs1.getString("heading6");
+	  heading7 = rs1.getString("heading7");
+	  heading8 = rs1.getString("heading8");
+	  restricted = rs1.getString("restricted");
+	  String size = rs1.getString("size");
+	  
+	  log.debug("BOX IS: " + box);
                         
-	    if(box==null)
-	      box="0";
+	  if(box==null)
+	    box="0";
                         
-	    box = (new Integer(new Double(box).intValue())).toString();
+	  box = (new Integer(new Double(box).intValue())).toString();
                         
-	    String date = rs1.getString("date");
-	    co2String = co2String + "\n<c02 level='file'>\n<did>\n";
+	  String date = rs1.getString("date");
+	  dscString.append("\n<c02 level='file'>\n<did>\n");
                         
                         
-	    if(isFrame){
-	      if((new Integer(box)).intValue() != prev_reel){
-		prev_reel = (new Integer(box)).intValue();
-		co2String = co2String +"<container id='reel"+prev_reel+"."+box+"' type='reel'>"+prev_reel+"</container>\n";
-		// when both reel/frame and box folder this will create problem
-		boxno=prev_reel;
-	      }
+	  if(isFrame){
+	    if((new Integer(box)).intValue() != prev_reel){
+	      prev_reel = (new Integer(box)).intValue();
+	      dscString.append("<container id='reel"+prev_reel+"."+box+"' type='reel'>"+prev_reel+"</container>\n");
+	      // when both reel/frame and box folder this will create problem
+	      boxno=prev_reel;
+	    }
                                 
-	    }else{
+	  }else{
                         
                         
-	      if(folder.equals("1.0") || folder.equals("1")){
-		boxno++;
-		co2String = co2String +"<container id='box"+boxno+"."+box+"' type='box'>"+box+"</container>\n";
-	      }
+	    if(folder.equals("1.0") || folder.equals("1")){
+	      boxno++;
+	      dscString.append("<container id='box"+boxno+"."+box+"' type='box'>"+box+"</container>\n");
 	    }
+	  }
                         
-	    co2String = co2String +"<container parent='"+container+boxno+"."+box+"' type='"+sc+"'>"+folder+"</container>\n";
-	    co2String = co2String +"<unittitle>"+heading1;
+	  dscString.append("<container parent='"+container+boxno+"."+box+"' type='"+sc+"'>"+folder+"</container>\n");
+	  dscString.append("<unittitle>"+heading1);
                                                 
-	    if(heading2!=null)
-	      co2String = co2String + " -- " + heading2;
+	if(heading2!=null)
+	  dscString.append(" -- " + heading2);
+	
+	if(heading3!=null)
+	  dscString.append(" -- " + heading3);
+	
+	if(heading4!=null)
+	  dscString.append(" -- " + heading4);
                         
-	    if(heading3!=null)
-	      co2String = co2String + " -- " + heading3;
+	if(heading5!=null)
+	  dscString.append(" -- " + heading5);
                         
-	    if(heading4!=null)
-	      co2String = co2String + " -- " + heading4;
+	if(heading6!=null)
+	  dscString.append(" -- " + heading6);
                         
-	    if(heading5!=null)
-	      co2String = co2String + " -- " + heading5;
+	if(heading7!=null)
+	  dscString.append(" -- " + heading7);
                         
-	    if(heading6!=null)
-	      co2String = co2String + " -- " + heading6;
+	if(heading8!=null)
+	  dscString.append(" -- " + heading8);
                         
-	    if(heading7!=null)
-	      co2String = co2String + " -- " + heading7;
+	dscString.append("</unittitle>\n");
                         
-	    if(heading8!=null)
-	      co2String = co2String + " -- " + heading8;
-                        
-	    co2String = co2String+"</unittitle>\n";
-                        
-	    if(date != null)
-	      co2String = co2String +"<unitdate>"+date+"</unitdate>\n";
+	if(date != null)
+	  dscString.append("<unitdate>"+date+"</unitdate>\n");
                 
-	    // Added March 13th 2005
-	    if(size != null)
-	      co2String = co2String +"<physdesc>"+size+"</physdesc>\n";
+	// Added March 13th 2005
+	if(size != null)
+	  dscString.append("<physdesc>"+size+"</physdesc>\n");
                         
                         
-	    co2String = co2String + "</did>\n";
-	    if(restricted.equals("1")){
-	      co2String = co2String+"<accessrestrict><p>Restricted</p></accessrestrict>";    
-	    }
+	dscString.append("</did>\n");
+	if(restricted.equals("1")){
+	  dscString.append("<accessrestrict><p>Restricted</p></accessrestrict>");    
+	}
                         
                          
 //??????????????????????????????? DELME C03 HERE ???////////////////                     
+	
+	query2 = "Select * from ItemList where archdescid = " + archid +" and series = " + seriesnumber + "  and subseries = " + subseriesnumber + " and box = " + box + " and folder_no = " + folder + " ;";
+	
+	Statement stmt2 = this.conn.createStatement();
+	ResultSet rs2 = stmt2.executeQuery(query2);
                          
-	    query2 = "Select * from ItemList where archdescid = " + archid +" and series = " + seriesnumber + "  and subseries = " + subseriesnumber + " and box = " + box + " and folder_no = " + folder + " ;";
-	    stmt2 = null;
-	    rs2 = null;
-	    stmt2= this.conn.createStatement();
-	    rs2 = stmt2.executeQuery(query2);
-	    //    co2String = co2String +"<alternatequeryc03>" +query2 + "</alternatequeryc03>";
-                         
-                         
-	    co3String ="";
-                        
-	    while(rs2.next()){
-	      item_no = rs2.getString("item no");
-	      h = rs2.getString("heading1");
-	      d = rs2.getString("date");
-	      s = rs2.getString("size");
-	      r = rs2.getString("restricted");
-	      co3String = co3String + "<c03 level='item'><did>\n<container parent='box"+boxno+"."+box+"' type='item'>"+item_no+"</container>\n<unittitle>"+h+"</unittitle>\n<unitdate>"+d+"</unitdate>\n";
+	while(rs2.next()) {
+	  item_no = rs2.getString("item no");
+	  h = rs2.getString("heading1");
+	  d = rs2.getString("date");
+	  s = rs2.getString("size");
+	  r = rs2.getString("restricted");
+	  dscString.append( "<c03 level='item'><did>\n<container parent='box"+boxno+"."+box+"' type='item'>"+item_no+"</container>\n<unittitle>"+h+"</unittitle>\n<unitdate>"+d+"</unitdate>\n");
                                                         
-	      if(s != null)
-		co3String = co3String + "<physdesc>"+s+"</physdesc>\n";
+	  if(s != null)
+	    dscString.append( "<physdesc>"+s+"</physdesc>\n");
 //NEW 9/25/2006                 
-	      co3String = co3String + "</did>\n";
-	      if(r.equals("1")){
-		co3String = co3String+"<accessrestrict><p>Restricted</p></accessrestrict>";}  
-	      co3String = co3String + "\n</c03>\n"; 
-	    }
+	  dscString.append( "</did>\n");
+	  if(r.equals("1")){
+	    dscString.append("<accessrestrict><p>Restricted</p></accessrestrict>");}  
+	  dscString.append( "\n</c03>\n"); 
+	}
+	rs2.close();
+	stmt2.close();
+	
+	dscString.append("\n</c02>\n");
 
-                                
-	    //JENNIE 9/25/2006
-	    //      if(r.equals("1")){
-	    //      co3String = co3String +"<accessrestrict><p>Restricted</p></accessrestrict>";    
-	    //}
-	    //      co3String = co3String + "\n</did>\n</c03>\n";           
-                                
-	    //      } // end of rs2
-                        
-                         
-	    //     System.out.println("CO3 STRING IS: " + co3String);
-	    co2String = co2String + co3String;
-	    //???????????????????????????????/////////////////////////////                  
-                         
-	    co2String = co2String  + "\n</c02>\n";
-
-	  }
-
+      }
+      rs1.close();
+      stmt1.close();
 
 
 ////////////////////?????????????????????????????????   
         
-	}
-                
-                
-                
-                
-                
-                
-                
-	co1String = co1String.append(co2String);
-	co1String  = co1String.append("</c01>");
-        
-      } // end of co1
-        
-        
-        
-    }catch(Exception ex){
-      log.error("c01 error: " + ex.getMessage());    
     }
+                
+    dscString.append("</c01>");
+        
+  } // end of co1
         
         
-    log.debug("============================================");
-    //System.out.println(co1String.toString());
-    log.debug("============================================");
-        
-    dscString = dscString + co1String.toString() + "\n</dsc>";
-    return dscString;
-        
+    
+  }catch(Exception ex){
+    log.error("c01 error: " + ex.getMessage());    
   }
         
         
+  log.debug("============================================");
+//System.out.println(co1String.toString());
+  log.debug("============================================");
+
+  dscString.append("\n</dsc>");
+  return dscString.toString();
         
-        
-        
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+}
+  
+      
   private String convertToDidXml(ResultSet rsArch,ResultSet rsApl, ResultSet rsRg){
     String didString =null;
 
@@ -1108,17 +996,17 @@ public class DataConvertor {
       String orgNode =rsArch.getString("originationdes"); 
       if(orgNode != null){
                 
-	if(orgNode.equals("persname")){
-	  didString = didString + "<persname";
-	  didString = didString +" encodinganalog=\"100\">"+ rsArch.getString("originationentry");
-	  didString = didString +"</persname>";
-	}else if(orgNode.equals("corpname")){
-	  didString = didString + "<corpname encodinganalog=\"110\">";
-	  didString = didString + rsArch.getString("originationentry");
-	  didString = didString +"</corpname>";
-	}else{
-	  log.debug("archdescdid!orgnationode not recognized: " +rsArch.getString("orignationdes"));     
-	}
+        if(orgNode.equals("persname")){
+          didString = didString + "<persname";
+          didString = didString +" encodinganalog=\"100\">"+ rsArch.getString("originationentry");
+          didString = didString +"</persname>";
+        }else if(orgNode.equals("corpname")){
+          didString = didString + "<corpname encodinganalog=\"110\">";
+          didString = didString + rsArch.getString("originationentry");
+          didString = didString +"</corpname>";
+        }else{
+          log.debug("archdescdid!orgnationode not recognized: " +rsArch.getString("orignationdes"));     
+        }
       }       
                         
                                 
@@ -1141,23 +1029,23 @@ public class DataConvertor {
                 
                 
       while(rsRg.next()){
-	String id =     rsRg.getString("resourcegdename");
+        String id =     rsRg.getString("resourcegdename");
                 
-	stmttest = conn.createStatement();      
-	log.debug("BEFORE I DIE: " + id);
-	rsTest = stmttest.executeQuery("SELECT * FROM rgnames where rguideid ="+id+"");
-	String rgvalue ="";
-	if(rsTest != null)
-	{
-	  rsTest.next();
-	  rgvalue = rsTest.getString("Type");
-	}
-	// RESOURCE GUIDE MAGIC
+        stmttest = conn.createStatement();      
+        log.debug("BEFORE I DIE: " + id);
+        rsTest = stmttest.executeQuery("SELECT * FROM rgnames where rguideid ="+id+"");
+        String rgvalue ="";
+        if(rsTest != null)
+        {
+          rsTest.next();
+          rgvalue = rsTest.getString("Type");
+        }
+        // RESOURCE GUIDE MAGIC
                 
-	String abs = rsRg.getString("resourcegdedesc");
-	abst = abst  +"<abstract type=\""+rgvalue+"\">"+abs+"</abstract>\n";
-	rsTest.close();
-	stmttest.close();
+        String abs = rsRg.getString("resourcegdedesc");
+        abst = abst  +"<abstract type=\""+rgvalue+"\">"+abs+"</abstract>\n";
+        rsTest.close();
+        stmttest.close();
       }
             
       didString = didString + abst;
@@ -1182,8 +1070,8 @@ public class DataConvertor {
                 
     try{
       if(continueToDisplayAnalyticOverview){          
-	overString = "<dsc type=\"analyticover\" id=\""+getUnique("dsc_")+"\">\n";
-	overString = overString +"<head>Contents of Collection</head>"; 
+        overString = "<dsc type=\"analyticover\" id=\""+getUnique("dsc_")+"\">\n";
+        overString = overString +"<head>Contents of Collection</head>"; 
       }       
                 
                 
@@ -1191,54 +1079,54 @@ public class DataConvertor {
                 
                 
                 
-	String id =rsSe.getString("seriesnumber");
-	String arrangementID = rsSe.getString("arrangementID");
+        String id =rsSe.getString("seriesnumber");
+        String arrangementID = rsSe.getString("arrangementID");
                 
-	overString = overString +"<c01 level=\"series\" id=\"series"+id+".a\">";
-	overString = overString +"<did><unittitle>"+rsSe.getString("seriestitle")+"</unittitle>";
-	overString = overString +"<unitdate>"+rsSe.getString("seriesdate")+"</unitdate>";
-	overString = overString +"<physdesc>"+rsSe.getString("seriessize")+"</physdesc>";
-	overString = overString +"</did>\n";
-	overString = overString +"<scopecontent>";
-	overString = overString + rsSe.getString("seriesdesc");
-	overString = overString +"</scopecontent>\n";
-	/*********************CHECK FOR SUBSERIES*************/
-	String query = "Select * from subseriesdesclist where archdescid = "+archid+" and arrangementID = "+arrangementID+";";
+        overString = overString +"<c01 level=\"series\" id=\"series"+id+".a\">";
+        overString = overString +"<did><unittitle>"+rsSe.getString("seriestitle")+"</unittitle>";
+        overString = overString +"<unitdate>"+rsSe.getString("seriesdate")+"</unitdate>";
+        overString = overString +"<physdesc>"+rsSe.getString("seriessize")+"</physdesc>";
+        overString = overString +"</did>\n";
+        overString = overString +"<scopecontent>";
+        overString = overString + rsSe.getString("seriesdesc");
+        overString = overString +"</scopecontent>\n";
+        /*********************CHECK FOR SUBSERIES*************/
+        String query = "Select * from subseriesdesclist where archdescid = "+archid+" and arrangementID = "+arrangementID+";";
         //      System.out.println("QUERy-> "+query);
-	Statement stmt = null;
-	ResultSet rs = null;
-	stmt= this.conn.createStatement();
-	rs = stmt.executeQuery(query);
-	while(rs.next()){
+        Statement stmt = null;
+        ResultSet rs = null;
+        stmt= this.conn.createStatement();
+        rs = stmt.executeQuery(query);
+        while(rs.next()){
                 
-	  String subseriestitle = rs.getString("subseriestitle");
-	  String subseriesnumber= rs.getString("subseriesnumber");
-	  String subseriesdate= rs.getString("subseriesdate");
-	  String subseriessize= rs.getString("subseriessize");
-	  String subseriesdesc= rs.getString("subseriesdesc");
+          String subseriestitle = rs.getString("subseriestitle");
+          String subseriesnumber= rs.getString("subseriesnumber");
+          String subseriesdate= rs.getString("subseriesdate");
+          String subseriessize= rs.getString("subseriessize");
+          String subseriesdesc= rs.getString("subseriesdesc");
                                 
-	  // subseries is present now make the CO2 and then get the CO3/C04
-	  overString = overString + "<c02 level='subseries' id='subseries"+id+"."+subseriesnumber+".a'>";
-	  overString = overString + "<did><unittitle>"+subseriestitle+"</unittitle>\n";
-	  overString = overString + "<unitdate>"+subseriesdate+"</unitdate>\n";
-	  if(subseriessize !=null)
-	    overString = overString + "<physdesc>"+subseriessize+"</physdesc>\n";
-	  overString = overString + "</did>\n";
-	  overString = overString + "<scopecontent>\n";
-	  overString = overString + subseriesdesc;
-	  overString = overString + "</scopecontent>\n";
-	  overString = overString + "</c02>\n";
+          // subseries is present now make the CO2 and then get the CO3/C04
+          overString = overString + "<c02 level='subseries' id='subseries"+id+"."+subseriesnumber+".a'>";
+          overString = overString + "<did><unittitle>"+subseriestitle+"</unittitle>\n";
+          overString = overString + "<unitdate>"+subseriesdate+"</unitdate>\n";
+          if(subseriessize !=null)
+            overString = overString + "<physdesc>"+subseriessize+"</physdesc>\n";
+          overString = overString + "</did>\n";
+          overString = overString + "<scopecontent>\n";
+          overString = overString + subseriesdesc;
+          overString = overString + "</scopecontent>\n";
+          overString = overString + "</c02>\n";
                         
                 
-	}
+        }
                 
-	/***************************************************/
+        /***************************************************/
                 
-	overString = overString +"</c01>\n";
+        overString = overString +"</c01>\n";
       }
       if(continueToDisplayAnalyticOverview){          
-	overString = overString +"</dsc>\n";
-	continueToDisplayAnalyticOverview = false;
+        overString = overString +"</dsc>\n";
+        continueToDisplayAnalyticOverview = false;
       }
     }catch (SQLException xsql){
       log.error("Problem in convertToDscOverXml");
@@ -1266,83 +1154,83 @@ public class DataConvertor {
       conStringSubject = conStringSubject + "<controlaccess>";
       conStringSubject = conStringSubject + "<head>Subjects</head>";
       while(rsSub.next()){
-	String marc = rsSub.getString("MARC");
+        String marc = rsSub.getString("MARC");
 
-	if (marc != null) {
-	  if(marc.startsWith("600")){ 
-	    String topic = rsSub.getString("topic");
-	    conStringSubject = conStringSubject +"<persname role=\"subject\" encodinganalog=\""+marc+"\">"+topic+"</persname>";
-	    //<!--these <corpname> and <subject> tags are repeatable--!>
-	    emptyControlAccessSubject = false;
-	  }
+        if (marc != null) {
+          if(marc.startsWith("600")){ 
+            String topic = rsSub.getString("topic");
+            conStringSubject = conStringSubject +"<persname role=\"subject\" encodinganalog=\""+marc+"\">"+topic+"</persname>";
+            //<!--these <corpname> and <subject> tags are repeatable--!>
+            emptyControlAccessSubject = false;
+          }
                         
-	  
-	  if(marc.startsWith("610")){ 
-	    String topic = rsSub.getString("topic");
-	    conStringSubject = conStringSubject +"<corpname role=\"subject\" encodinganalog=\""+marc+"\">"+topic+"</corpname>";
-	    //<!--these <corpname> and <subject> tags are repeatable--!>
-	    emptyControlAccessSubject = false;
-	  }
-	  
-	  if(marc.startsWith("650")){ 
-	    String topic = rsSub.getString("topic");
-	    conStringSubject = conStringSubject +"<subject encodinganalog=\""+marc+"\">"+topic+"</subject>";
-	    //<!--these <corpname> and <subject> tags are repeatable--!>
-	    emptyControlAccessSubject = false;
-	  }
-	  
-	  if(marc.startsWith("651")){ 
-	    String topic = rsSub.getString("topic");
-	    conStringSubject = conStringSubject +"<geogname role=\"subject\" encodinganalog=\""+marc+"\">"+topic+"</geogname>";
-	    //<!--these <corpname> and <subject> tags are repeatable--!>
-	    emptyControlAccessSubject = false;
-	  }
-	//commented by Amit Kumar on April 17th 2005
+          
+          if(marc.startsWith("610")){ 
+            String topic = rsSub.getString("topic");
+            conStringSubject = conStringSubject +"<corpname role=\"subject\" encodinganalog=\""+marc+"\">"+topic+"</corpname>";
+            //<!--these <corpname> and <subject> tags are repeatable--!>
+            emptyControlAccessSubject = false;
+          }
+          
+          if(marc.startsWith("650")){ 
+            String topic = rsSub.getString("topic");
+            conStringSubject = conStringSubject +"<subject encodinganalog=\""+marc+"\">"+topic+"</subject>";
+            //<!--these <corpname> and <subject> tags are repeatable--!>
+            emptyControlAccessSubject = false;
+          }
+          
+          if(marc.startsWith("651")){ 
+            String topic = rsSub.getString("topic");
+            conStringSubject = conStringSubject +"<geogname role=\"subject\" encodinganalog=\""+marc+"\">"+topic+"</geogname>";
+            //<!--these <corpname> and <subject> tags are repeatable--!>
+            emptyControlAccessSubject = false;
+          }
+          //commented by Amit Kumar on April 17th 2005
                         
-        /*      
-		if(marc.startsWith("700")){ 
-		String topic = rsSub.getString("topic");
-		conStringSubject = conStringSubject +"<persname role=\"subject\" encodinganalog=\""+marc+"\">"+topic+"</persname>";
-		//<!--these <corpname> and <subject> tags are repeatable--!>
-		emptyControlAccessSubject = false;
-		}
+          /*      
+                  if(marc.startsWith("700")){ 
+                  String topic = rsSub.getString("topic");
+                  conStringSubject = conStringSubject +"<persname role=\"subject\" encodinganalog=\""+marc+"\">"+topic+"</persname>";
+                  //<!--these <corpname> and <subject> tags are repeatable--!>
+                  emptyControlAccessSubject = false;
+                  }
                         
-		if(marc.startsWith("710")){ 
-		String topic = rsSub.getString("topic");
-		conStringSubject = conStringSubject +"<corpname role=\"subject\" encodinganalog=\""+marc+"\">"+topic+"</corpname>";
-		//<!--these <corpname> and <subject> tags are repeatable--!>
-		emptyControlAccessSubject = false;
-		}
-	*/      
-	}                                     
+                  if(marc.startsWith("710")){ 
+                  String topic = rsSub.getString("topic");
+                  conStringSubject = conStringSubject +"<corpname role=\"subject\" encodinganalog=\""+marc+"\">"+topic+"</corpname>";
+                  //<!--these <corpname> and <subject> tags are repeatable--!>
+                  emptyControlAccessSubject = false;
+                  }
+          */      
+        }                                     
       }
       conStringSubject = conStringSubject +"</controlaccess>\n";
                 
       if(!emptyControlAccessSubject)
-	conString = conString  + conStringSubject; 
+        conString = conString  + conStringSubject; 
                 
                 
       conStringPeople = conStringPeople + "<controlaccess>";
       conStringPeople = conStringPeople + "<head>People</head>";
       while(rsSubDuplicate.next()){
-	String marc = rsSubDuplicate.getString("MARC");
+        String marc = rsSubDuplicate.getString("MARC");
                         
-	if (marc != null) {
-	  if(marc.startsWith("700")){ 
+        if (marc != null) {
+          if(marc.startsWith("700")){ 
                                 
-	    conStringPeople = conStringPeople + "<persname role=\"subject\" encodinganalog=\""+marc+"\">";
-	    String topic = rsSubDuplicate.getString("topic");
-	    conStringPeople = conStringPeople +topic+"</persname>\n";
-	    emptyControlAccessPeople = false;
-	  }
-	  if(marc.startsWith("710")){ 
-	    String topic = rsSubDuplicate.getString("topic");
-	    conStringPeople  = conStringPeople  +"<corpname role=\"subject\" encodinganalog=\""+marc+"\">"+topic+"</corpname>";
-	    //<!--these <corpname> and <subject> tags are repeatable--!>
-	    emptyControlAccessSubject = false;
-	  }
+            conStringPeople = conStringPeople + "<persname role=\"subject\" encodinganalog=\""+marc+"\">";
+            String topic = rsSubDuplicate.getString("topic");
+            conStringPeople = conStringPeople +topic+"</persname>\n";
+            emptyControlAccessPeople = false;
+          }
+          if(marc.startsWith("710")){ 
+            String topic = rsSubDuplicate.getString("topic");
+            conStringPeople  = conStringPeople  +"<corpname role=\"subject\" encodinganalog=\""+marc+"\">"+topic+"</corpname>";
+            //<!--these <corpname> and <subject> tags are repeatable--!>
+            emptyControlAccessSubject = false;
+          }
                                 
-	}                     
+        }                     
       }
       conStringPeople = conStringPeople +"</controlaccess>\n";
                 
@@ -1377,12 +1265,12 @@ public class DataConvertor {
       arrString = arrString + "<list>\n";
       boolean itemPresent = false;
       while(rsSeries.next()){
-	arrString = arrString + "<item>Series "+rsSeries.getString("seriesnumber")+": "+rsSeries.getString("seriestitle");
-	arrString = arrString +"</item>\n";
-	itemPresent = true;
+        arrString = arrString + "<item>Series "+rsSeries.getString("seriesnumber")+": "+rsSeries.getString("seriestitle");
+        arrString = arrString +"</item>\n";
+        itemPresent = true;
       }
       if(!itemPresent)
-	arrString = arrString  + "<item></item>";
+        arrString = arrString  + "<item></item>";
                                         
       //<!--this <list> tag is repeatable--!>
 
@@ -1396,7 +1284,7 @@ public class DataConvertor {
                                         
       //if(!rel.equals("null")){
       if(rel == null)
-	rel ="";
+        rel ="";
                                 
       //<!--NOTE: If this <relatedmaterial> tag is empty, we do not want to "print" it.-->    
                                         
@@ -1411,27 +1299,27 @@ public class DataConvertor {
                                         
       while(rsGuide.next()){          
                 
-	String id =     rsGuide.getString("resourcegdename");
+        String id =     rsGuide.getString("resourcegdename");
                                 
-	ResultSet rsTest;
-	Statement stmttest = null;      
-	stmttest = conn.createStatement();      
-	rsTest = stmttest.executeQuery("SELECT * FROM rgnames where rguideid ="+id+"");
+        ResultSet rsTest;
+        Statement stmttest = null;      
+        stmttest = conn.createStatement();      
+        rsTest = stmttest.executeQuery("SELECT * FROM rgnames where rguideid ="+id+"");
         
-	String rgtitle ="";
-	if(rsTest != null)
-	{
-	  rsTest.next();
-	  rgtitle = rsTest.getString("Category");
-	}
+        String rgtitle ="";
+        if(rsTest != null)
+        {
+          rsTest.next();
+          rgtitle = rsTest.getString("Category");
+        }
                                         
                                          
                                         
                                         
                                 
                                         
-	//String rgtitle = id;
-	arrString = arrString +"<archref>\n<unittitle>"+rgtitle+"</unittitle>\n</archref>\n";                                   
+        //String rgtitle = id;
+        arrString = arrString +"<archref>\n<unittitle>"+rgtitle+"</unittitle>\n</archref>\n";                                   
       }
                                         
       //<!--This <archref> tag is repeatable.  Is this how we want to handle this? It should have a dynamic hyperlink that pulls up abstracts to other collections in the same categories - is this feasible?--!>
@@ -1447,16 +1335,16 @@ public class DataConvertor {
       String sepmat = rsArch.getString("separatedmaterial");
       //System.out.println("SEPMAT IS :"+ sepmat);
       if(sepmat != null && sepmat != ""){
-	arrString = arrString +"<separatedmaterial id=\""+getUnique("sm_")+"\">\n";
-	arrString = arrString +"<head>Separated Material</head>\n";
-	arrString = arrString + sepmat;
-	arrString = arrString + "</separatedmaterial>\n";
+        arrString = arrString +"<separatedmaterial id=\""+getUnique("sm_")+"\">\n";
+        arrString = arrString +"<head>Separated Material</head>\n";
+        arrString = arrString + sepmat;
+        arrString = arrString + "</separatedmaterial>\n";
       }
                                         
       String  odd = rsArch.getString("odd");
       //<!--NOTE: If this <odd> tag is empty, we do not want to "print it."--!>
       if(odd != null && odd != ""){
-	arrString = arrString +"<odd>"+odd+"</odd>";
+        arrString = arrString +"<odd>"+odd+"</odd>";
       }
                                         
                                         
@@ -1464,10 +1352,10 @@ public class DataConvertor {
                                         
       String  bibl = rsArch.getString("bibliography");
       if(bibl!= null && bibl != ""){  
-	arrString = arrString +"<bibliography id=\""+getUnique("bib_")+"\">";
-	arrString = arrString +"<head>Bibliography</head>";
-	arrString = arrString + bibl; 
-	arrString = arrString +"</bibliography>\n";
+        arrString = arrString +"<bibliography id=\""+getUnique("bib_")+"\">";
+        arrString = arrString +"<head>Bibliography</head>";
+        arrString = arrString + bibl; 
+        arrString = arrString +"</bibliography>\n";
       }
 
                                 
@@ -1495,10 +1383,10 @@ public class DataConvertor {
       String altfor = rsArch.getString("altformavail");
                         
       if(altfor != null && altfor != ""){
-	//<!--NOTE: If this <altformavail> tag is empty, we do not want to "print" it.-->
-	descString = descString +"<altformavail encodinganalog=\"530\">\n";
-	descString = descString +"<p>"+altfor+"</p>\n";
-	descString = descString +"</altformavail>\n";
+        //<!--NOTE: If this <altformavail> tag is empty, we do not want to "print" it.-->
+        descString = descString +"<altformavail encodinganalog=\"530\">\n";
+        descString = descString +"<p>"+altfor+"</p>\n";
+        descString = descString +"</altformavail>\n";
       }
         
                         
@@ -1655,62 +1543,62 @@ public class DataConvertor {
     String phyString ="";
     try{
       while(rsApl.next()){
-	String seriesLoc =rsApl.getString("Series Locations");
-	phyString = phyString + "<physloc audience=\"internal\">";
+        String seriesLoc =rsApl.getString("Series Locations");
+        phyString = phyString + "<physloc audience=\"internal\">";
                 
-	if(seriesLoc != null)
-	  phyString = phyString +seriesLoc+":";
+        if(seriesLoc != null)
+          phyString = phyString +seriesLoc+":";
                 
-	String hbkfloor = rsApl.getString("HBKFLOOR Begin");
-	if(hbkfloor!= null)
-	  phyString = phyString + hbkfloor + ":";
+        String hbkfloor = rsApl.getString("HBKFLOOR Begin");
+        if(hbkfloor!= null)
+          phyString = phyString + hbkfloor + ":";
                 
-	String hbkrange = rsApl.getString("HBKRANGE Begin");
-	if(hbkrange!= null)
-	  phyString = phyString +hbkrange+":";
+        String hbkrange = rsApl.getString("HBKRANGE Begin");
+        if(hbkrange!= null)
+          phyString = phyString +hbkrange+":";
                 
-	String hbkside = rsApl.getString("HBKSIDE Begin");
+        String hbkside = rsApl.getString("HBKSIDE Begin");
                 
-	if(hbkside!= null)
-	  phyString = phyString +hbkside+":";
+        if(hbkside!= null)
+          phyString = phyString +hbkside+":";
                 
-	String hbkshelf = rsApl.getString("HBKSHELF Begin");
-	if(hbkshelf!= null)
-	  phyString = phyString +hbkshelf+"\n";
+        String hbkshelf = rsApl.getString("HBKSHELF Begin");
+        if(hbkshelf!= null)
+          phyString = phyString +hbkshelf+"\n";
                 
-	String hbkspace = rsApl.getString("HBKSPACE Begin");
-	if(hbkspace!= null)
-	  phyString = phyString +hbkspace+" - ";
+        String hbkspace = rsApl.getString("HBKSPACE Begin");
+        if(hbkspace!= null)
+          phyString = phyString +hbkspace+" - ";
                 
-	// Jennie Requested this to be commented out December 17 th 2004
-	//if(seriesLoc!= null)
-	//phyString = phyString+ seriesLoc+" : ";
-                
-                
-	String hbkfloor_end = rsApl.getString("HBKFLOOR End");
-	if(hbkfloor_end!= null)
-	  phyString = phyString + hbkfloor_end+" ";
-                
-	String hbkrange_end = rsApl.getString("HBKRANGE End");
-	if(hbkrange_end!= null)
-	  phyString = phyString+hbkrange_end;
+        // Jennie Requested this to be commented out December 17 th 2004
+        //if(seriesLoc!= null)
+        //phyString = phyString+ seriesLoc+" : ";
                 
                 
-	String hbkside_end = rsApl.getString("HBKSIDE End");
-	if(hbkside_end!= null)
-	  phyString = phyString +" : "+hbkside_end+" : ";
+        String hbkfloor_end = rsApl.getString("HBKFLOOR End");
+        if(hbkfloor_end!= null)
+          phyString = phyString + hbkfloor_end+" ";
                 
-	String hbkshelf_end = rsApl.getString("HBKSHELF End");
-	String hbkspace_end = rsApl.getString("HBKSPACE End");
+        String hbkrange_end = rsApl.getString("HBKRANGE End");
+        if(hbkrange_end!= null)
+          phyString = phyString+hbkrange_end;
+                
+                
+        String hbkside_end = rsApl.getString("HBKSIDE End");
+        if(hbkside_end!= null)
+          phyString = phyString +" : "+hbkside_end+" : ";
+                
+        String hbkshelf_end = rsApl.getString("HBKSHELF End");
+        String hbkspace_end = rsApl.getString("HBKSPACE End");
 
-	if(hbkshelf_end!= null)
-	  phyString = phyString +hbkshelf_end+" ";
+        if(hbkshelf_end!= null)
+          phyString = phyString +hbkshelf_end+" ";
                 
-	if(hbkspace_end!= null)
-	  phyString = phyString +hbkspace_end;
+        if(hbkspace_end!= null)
+          phyString = phyString +hbkspace_end;
                 
                 
-	phyString = phyString + "</physloc>\n";
+        phyString = phyString + "</physloc>\n";
       }
     }catch(SQLException sqe){
       log.error("Error: " +sqe.getMessage());
@@ -1747,9 +1635,9 @@ public class DataConvertor {
       rsArch = stmtArch.executeQuery( "SELECT * FROM archdescdid where trim(eadid) <> '' order by eadid");
       while(rsArch.next()){
                         
-	String oid = rsArch.getString("originationentry");
-	if(oid==null)oid="";
-	result.add(new Couple(rsArch.getString("eadid"), rsArch.getString("archdescid"),oid));
+        String oid = rsArch.getString("originationentry");
+        if(oid==null)oid="";
+        result.add(new Couple(rsArch.getString("eadid"), rsArch.getString("archdescid"),oid));
       }
       rsArch.close();
       stmtArch.close();               
