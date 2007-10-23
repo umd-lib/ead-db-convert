@@ -1,6 +1,8 @@
 package org.mith.ead.data;
 
 import java.io.File;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
@@ -443,6 +445,9 @@ public class DataConvertor {
         
 
 private String convertToDscInXml(String archid, ResultSet rsSe) {
+
+  log.debug("convertToDscInXml: enter");
+
   StringBuffer dscString = new StringBuffer(2048);
   
   Statement stmt3 = null;
@@ -963,8 +968,10 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
         
         
     
-  }catch(Exception ex){
-    log.error("c01 error: " + ex.getMessage());    
+  } catch(Exception ex) {
+    
+    log.error("c01 error:\n" + getStackTrace(ex));
+
   }
         
         
@@ -973,8 +980,10 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
   log.debug("============================================");
 
   dscString.append("\n</dsc>");
+
+  log.debug("convertToDscInXml: exit");
+
   return dscString.toString();
-        
 }
   
       
@@ -1655,4 +1664,13 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
     return append+temp;
   }
         
+
+  public static String getStackTrace(Throwable t) {
+    StringWriter sw = new StringWriter();
+    PrintWriter pw = new PrintWriter(sw);
+    t.printStackTrace(pw);
+    pw.flush();
+    
+    return sw.toString();
+  }
 }
