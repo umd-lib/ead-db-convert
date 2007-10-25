@@ -48,6 +48,13 @@ public class DataConvertor {
     {
       // Load the database driver
       Class.forName( dp.getDriver() ) ;
+
+      // Close any old connections
+      try {
+	this.conn.close();
+      }
+      catch (Exception e) {};
+
       // Get a connection to the database
       this.conn = DriverManager.getConnection( dp.getDatabaseUrl() ) ;
       this.conn.setReadOnly(true);

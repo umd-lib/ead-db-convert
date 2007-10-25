@@ -261,6 +261,12 @@ public class EadGuiPreference extends JFrame implements ActionListener{
     }
     if(command.equalsIgnoreCase("save")){
       gui.dp.setDatabaseUrl(uriTextBox.getText());
+      
+      try {
+	gui.dc.connect();
+      }
+      catch (Exception e2) {};
+
       gui.dp.setProjectDir(wspaceTextBox.getText());
       gui.dp.setDriver((String)dataList.getSelectedValue());
       log.debug("SAVED THE DP");
