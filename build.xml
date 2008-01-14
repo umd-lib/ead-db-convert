@@ -56,6 +56,17 @@
   </target>
 
 
+  <!-- Test Dates -->
+  <target name="dates" depends="compile">
+    <java 
+      classname="org.mith.ead.data.TestDateHandler"
+      fork="true"
+      classpathref="classpath"
+    >
+    </java>
+  </target>
+
+
   <!-- Profile -->
   <target name="profile" depends="compile">
     <java 
