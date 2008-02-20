@@ -306,42 +306,31 @@ public class EadGui extends JFrame implements ActionListener{
 				    "Missing Workspace Directory",
 				    JOptionPane.WARNING_MESSAGE);
     } else {  
-      // make sure they really want to do this
-
-      int opt = JOptionPane.showConfirmDialog(this,
-					      "This operation will transform all selected finding aids and\nplace them in your Workspace Directory\nwith a default name of <eadid>.xml\nAre you sure you want to do this?",
-					      "Transform All Selected?",
-					      JOptionPane.YES_NO_OPTION,
-					      JOptionPane.WARNING_MESSAGE);
-
-      if (opt == JOptionPane.YES_OPTION) {
-	// get all selected
+      // get all selected
 	
-	Object selected[] = listEad.getSelectedValues();
+      Object selected[] = listEad.getSelectedValues();
 
-	// execute the transformations
-	jta.append("\nTransform Selected");
+      // execute the transformations
+      jta.append("\nTransform Selected");
 
-	Date start = new Date();
+      Date start = new Date();
 
-	File fprojDir = new File(projDir);
+      File fprojDir = new File(projDir);
 
-	// loop through all eadid
-	for(int i=0; i < selected.length; i++){
-	  Couple c = (Couple)selected[i];
+      // loop through all eadid
+      for(int i=0; i < selected.length; i++){
+	Couple c = (Couple)selected[i];
 
-	  File file = new File(fprojDir, c.eadid + ".xml");
-	  jta.append("\ntransforming: " + file.getAbsolutePath());
-	  jta.paintImmediately(jta.getBounds());
+	File file = new File(fprojDir, c.eadid + ".xml");
+	jta.append("\ntransforming: " + file.getAbsolutePath());
+	jta.paintImmediately(jta.getBounds());
 
-	  dc.transform(c.archdescid, file);
-	}
-
-	Date stop = new Date();
-	int elapsed = (int)((stop.getTime() - start.getTime()) / 1000l);
-	jta.append("\nTransform all elapsed time: " + elapsed + " seconds");
-
+	dc.transform(c.archdescid, file);
       }
+
+      Date stop = new Date();
+      int elapsed = (int)((stop.getTime() - start.getTime()) / 1000l);
+      jta.append("\nTransform all elapsed time: " + elapsed + " seconds");
     }
   }
 

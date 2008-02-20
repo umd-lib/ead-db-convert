@@ -6,6 +6,7 @@ import java.io.StringWriter;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.SQLWarning;
@@ -460,7 +461,7 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
   Statement stmt3 = null;
   ResultSet rs3 = null;
   String query,query1,query2;
-  String heading1,heading2, heading3, heading4, heading5, heading6, heading7, heading8, restricted; 
+  String heading1,heading2, heading3, heading4, heading5, restricted,note; 
   String subseriestitle,subseriesnumber,subseriesdate,subseriessize,subseriesdesc;
   String item_no, h,d, s, r = null;
   
@@ -642,10 +643,6 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
 	  heading3 = rs1.getString("heading3");
 	  heading4 = rs1.getString("heading4");
 	  heading5 = rs1.getString("heading5");
-	  heading6 = rs1.getString("heading6");
-	  heading7 = rs1.getString("heading7");
-	  heading8 = rs1.getString("heading8");
-                        
                         
 	  String date = rs1.getString("date");
 	  restricted = rs1.getString("restricted");
@@ -695,14 +692,6 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
 	  if(heading5!=null)
 	    dscString.append( " -- " + heading5);
                         
-	  if(heading6!=null)
-	    dscString.append( " -- " + heading6);
-                        
-	  if(heading7!=null)
-	    dscString.append( " -- " + heading7);
-                        
-	  if(heading8!=null)
-	    dscString.append( " -- " + heading8);
                         
                         
                         
@@ -798,11 +787,6 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
 
 	boolean resetIsFrame = isFrame;
 
-
-
-
- 
-                
 	if(isFrame)
 	  query1 =  "Select * from BoxList where archdescid = " + archid +" and seriesnumber = "+seriesnumber+" order by reel  * 1, frame * 1;";
 	else
@@ -851,17 +835,16 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
                 
                                  
 	  log.debug("DEBUG 5:");
-                        
+
+	  String boxlistid = rs1.getString("boxlistid");
 	  subseriesnumber = rs1.getString("subseriesnumber");
 	  heading1 = rs1.getString("heading1");
 	  heading2 = rs1.getString("heading2");
 	  heading3 = rs1.getString("heading3");
 	  heading4 = rs1.getString("heading4");
 	  heading5 = rs1.getString("heading5");
-	  heading6 = rs1.getString("heading6");
-	  heading7 = rs1.getString("heading7");
-	  heading8 = rs1.getString("heading8");
 	  restricted = rs1.getString("restricted");
+	  note     = rs1.getString("note");
 	  String size = rs1.getString("size");
 	  
 	  log.debug("BOX IS: " + box);
@@ -907,15 +890,6 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
 	if(heading5!=null)
 	  dscString.append(" -- " + heading5);
                         
-	if(heading6!=null)
-	  dscString.append(" -- " + heading6);
-                        
-	if(heading7!=null)
-	  dscString.append(" -- " + heading7);
-                        
-	if(heading8!=null)
-	  dscString.append(" -- " + heading8);
-                        
 	dscString.append("</unittitle>\n");
                         
 	if(date != null)
@@ -930,7 +904,19 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
 	if(restricted.equals("1")){
 	  dscString.append("<accessrestrict><p>Restricted</p></accessrestrict>");    
 	}
-                        
+
+//	Runtime run = Runtime.getRuntime();
+//	System.out.println("max: " + run.maxMemory() + "\n"
+//			   + "fre: " + run.freeMemory() + "\n"
+//			   + "tot: " + run.totalMemory() + "\n");
+
+	addSubjectsBoxList(boxlistid, dscString);
+
+//	dscString.append("<controlaccess><persname>SUBJECT</persname></controlaccess> Repeatable");
+//
+	if (note != null) {
+	  dscString.append("<note><p>" + note + "</p></note>");
+	}                        
                          
 //??????????????????????????????? DELME C03 HERE ???////////////////                     
 	
@@ -1679,5 +1665,26 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
     pw.flush();
     
     return sw.toString();
+  }
+
+  public PreparedStatement stmtSubjectsBoxList = null;
+
+  public void addSubjectsBoxList(String boxlistid, StringBuffer dscString) throws SQLException {
+    if (stmtSubjectsBoxList == null) {
+      stmtSubjectsBoxList = this.conn.prepareStatement("SELECT topic FROM SubjectsBoxList where BoxListID=?");
+    }
+
+    stmtSubjectsBoxList.clearParameters();
+    stmtSubjectsBoxList.setString(1, boxlistid);
+
+    ResultSet rs = stmtSubjectsBoxList.executeQuery();
+    while(rs.next()){
+                        
+      String topic = rs.getString("topic");
+      if (topic != null) {
+	dscString.append("<controlaccess><subject>" + topic + "</subject></controlaccess>\n");
+      }
+    }
+    rs.close();
   }
 }
