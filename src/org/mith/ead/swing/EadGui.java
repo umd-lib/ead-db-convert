@@ -67,7 +67,6 @@ public class EadGui extends JFrame implements ActionListener{
     setDefaultLookAndFeelDecorated(true);
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     dp = new DatabaseProperty();
-    dp.reset();
     listModel = new DefaultListModel();
     mlcr = new MyListCellRenderer();
     EADIDVector = new Vector(30,10);
@@ -106,8 +105,8 @@ public class EadGui extends JFrame implements ActionListener{
 
     JScrollPane scrollPane = 
       new JScrollPane(jta,
-		      JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-		      JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
+                      JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+                      JScrollPane.HORIZONTAL_SCROLLBAR_ALWAYS);
 
     scrollPane.setPreferredSize(new Dimension(150,150));
     jta.setEditable(false);
@@ -115,7 +114,7 @@ public class EadGui extends JFrame implements ActionListener{
 
 
     JSplitPane jsplit = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
-				       topPanel,scrollPane);
+                                       topPanel,scrollPane);
     jsplit.setOneTouchExpandable(true);
     jsplit.setDividerLocation(400);
     contentPane.add(jsplit,BorderLayout.CENTER);
@@ -276,19 +275,19 @@ public class EadGui extends JFrame implements ActionListener{
 
     if(selected == null || selected == ""){
       JOptionPane.showMessageDialog(this,
-				    "Select an EAD ID to Transform. \n Click on retrieve button to view list.",
-				    "Select EAD ID",
-				    JOptionPane.WARNING_MESSAGE);
+                                    "Select an EAD ID to Transform. \n Click on retrieve button to view list.",
+                                    "Select EAD ID",
+                                    JOptionPane.WARNING_MESSAGE);
 
     }else{
       processButton.setEnabled(false);
       jta.setText(jta.getText()+"\n"+"Starting Transformation "+ selected);
       String selected_id = null;
       for(int i=0; i < EADIDVector.size(); i++){
-	if(((Couple)EADIDVector.elementAt(i)).eadid.equals(selected)){
-	  selected_id = ((Couple)EADIDVector.elementAt(i)).archdescid;
-	  //System.out.println("SELECTED IS: "+ selected_id );
-	}
+        if(((Couple)EADIDVector.elementAt(i)).eadid.equals(selected)){
+          selected_id = ((Couple)EADIDVector.elementAt(i)).archdescid;
+          //System.out.println("SELECTED IS: "+ selected_id );
+        }
       }
       dc.transform(selected_id);
       processButton.setEnabled(true);
@@ -302,12 +301,12 @@ public class EadGui extends JFrame implements ActionListener{
 
     if (projDir == null || projDir.equals("")) {
       JOptionPane.showMessageDialog(this,
-				    "You must set the Workspace Directory \n under Preferences",
-				    "Missing Workspace Directory",
-				    JOptionPane.WARNING_MESSAGE);
+                                    "You must set the Workspace Directory \n under Preferences",
+                                    "Missing Workspace Directory",
+                                    JOptionPane.WARNING_MESSAGE);
     } else {  
       // get all selected
-	
+        
       Object selected[] = listEad.getSelectedValues();
 
       // execute the transformations
@@ -319,13 +318,13 @@ public class EadGui extends JFrame implements ActionListener{
 
       // loop through all eadid
       for(int i=0; i < selected.length; i++){
-	Couple c = (Couple)selected[i];
+        Couple c = (Couple)selected[i];
 
-	File file = new File(fprojDir, c.eadid + ".xml");
-	jta.append("\ntransforming: " + file.getAbsolutePath());
-	jta.paintImmediately(jta.getBounds());
+        File file = new File(fprojDir, c.eadid + ".xml");
+        jta.append("\ntransforming: " + file.getAbsolutePath());
+        jta.paintImmediately(jta.getBounds());
 
-	dc.transform(c.archdescid, file);
+        dc.transform(c.archdescid, file);
       }
 
       Date stop = new Date();
