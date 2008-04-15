@@ -63,7 +63,7 @@
       fork="true"
       classpathref="classpath"
     >
-      <arg value="data/dates.txt"/>
+      <arg value="data/test.txt"/>
     </java>
   </target>
 

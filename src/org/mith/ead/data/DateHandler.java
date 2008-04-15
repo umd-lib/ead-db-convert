@@ -43,7 +43,7 @@ public class DateHandler {
    *
    * @param strDisplay display version of a date
    *
-   * @return normalized date or null if unable to convert
+   * @return normalized date or "unknown" if unable to convert
    */
 
   public static String displayToNorm(String strDisplay) {
@@ -73,7 +73,7 @@ public class DateHandler {
     Vector v = new Vector();
 
     // Handle dates with commas (one date in the list)
-    if (get("(\\M)( \\d{1,2}(-\\d{1,2})?)?, \\d{4}(-(\\M)( \\d{1,2}(-\\d{1,2})?)?, \\d{4})?").matcher(s).matches()) {
+    if (get("(\\M)( \\d{1,2}(-\\d{1,2})?)?, \\d{4} *(- *(\\M)( \\d{1,2}(-\\d{1,2})?)?, \\d{4})?").matcher(s).matches()) {
       v.add(s);
     }
 
@@ -89,6 +89,11 @@ public class DateHandler {
     // yyyy, mmm dd
     else if (get("(\\d{4}) *, *(\\M) *(\\d{1,2})").matcher(s).matches()) {
       v.add(s);
+    }
+
+    // sea, yyyy
+    else if (get("(\\N) *, *(\\d{4})").matcher(s).matches()) {
+	v.add(s);
     }
 
     else {
@@ -133,7 +138,9 @@ public class DateHandler {
 	 }
 
 	 s = sb.toString();
-
+	 if (s == null || s.length() == 0) {
+	     s = "(unknown)";
+	 }
     log.debug("out:    " + s + "\n");
 
     return s;
@@ -214,6 +221,39 @@ public class DateHandler {
       r1 = displayToNormSingle(s);
     }
 
+    // sea-sea yyyy
+    else if ((m = get("(\\N) *[-/] *(\\N) *(\\d{4})( *-* *(\\d{4}))?").matcher(s)).matches()) {
+      if (m.group(1).equals("winter")) {
+        r1 = displayToNormSingle("begin " + m.group(1) + " " + dec(m.group(3)));
+      } else {
+        r1 = displayToNormSingle("begin " + m.group(1) + " " + m.group(3));
+      }
+      r2 = displayToNormSingle("end " + m.group(2) + " " + m.group(3));
+    }
+
+    // sea yyyy - sea yyyy
+    else if ((m = get("(\\N) *(\\d{4}) *[-/] *(\\N) *(\\d{4})").matcher(s)).matches()) {
+      r1 = displayToNormSingle("begin " + m.group(1) + " " + m.group(2));
+      r2 = displayToNormSingle("begin " + m.group(3) + " " + m.group(4));
+    }
+
+    // sea yyyy - yyyy (treat 2nd yyyy as year except for winter)
+    else if ((m = get("(\\N) *(\\d{4}) *[-/] *(\\d{4})").matcher(s)).matches()) {
+      if (m.group(1).equals("winter")) {
+	r1 = displayToNormSingle("begin " + m.group(1) + " " + m.group(2));
+	r2 = displayToNormSingle("end " + m.group(1) + " " + m.group(2));
+      } else {
+	r1 = displayToNormSingle("begin " + m.group(1) + " " + m.group(2));
+	r2 = displayToNormSingle(m.group(3));
+      }
+    }
+
+    // sea yyyy
+    else if ((m = get("(\\N),? *(\\d{4})").matcher(s)).matches()) {
+      r1 = displayToNormSingle("begin " + m.group(1) + " " + m.group(2));
+      r2 = displayToNormSingle("end " + m.group(1) + " " + m.group(2));
+    }
+
     // generic range
     else if ((m = get("(.*?) *- *(.*?)").matcher(s)).matches()) {
       r1 = displayToNormSingle(m.group(1));
@@ -287,6 +327,11 @@ public class DateHandler {
       return m.group(1) ;
     }
 
+    // n.d.
+    else if ((m = get("n.d.?").matcher(s)).matches()) {
+      return "(undated)" ;
+    }
+
     // undated unknown
     else if ((m = get("(undated|unknown)").matcher(s)).matches()) {
       return "(" + m.group(1) + ")" ;
@@ -315,6 +360,16 @@ public class DateHandler {
     // circa yyyy
     else if ((m = get("circa *(\\d{4})").matcher(s)).matches()) {
       return m.group(1) + " (circa)" ;
+    }
+
+    // begin|end sea yyyy
+    else if ((m = get("((begin|end) (\\N)) (\\d{4})").matcher(s)).matches()) {
+      if (m.group(1).equals("end winter")) {
+	return inc(m.group(4)) + "-" + seasonToNum(m.group(1));
+      } else {
+	return m.group(4) + "-" + seasonToNum(m.group(1));
+      }
+
     }
 
     return null;
@@ -361,6 +416,23 @@ public class DateHandler {
 
 
   /**
+   * Increment a string representing an integer
+   */
+
+  private static String inc(String s) {
+    return Integer.toString(Integer.parseInt(s) + 1);
+  }
+
+  /**
+   * Decrement a string representing an integer
+   */
+
+  private static String dec(String s) {
+    return Integer.toString(Integer.parseInt(s) - 1);
+  }
+
+
+  /**
    * Convert a month name to number.
    */
 
@@ -377,6 +449,25 @@ public class DateHandler {
     else if (s.equals("october"))      { return "10"; }
     else if (s.equals("november"))     { return "11"; }
     else if (s.equals("december"))     { return "12"; }
+
+    return "??";
+  }
+
+  /**
+   * Convert a season to number.
+   */
+
+  private static String seasonToNum(String s) {
+    if      (s.equals("begin spring"))   { return "03"; }
+    else if (s.equals("end spring"))     { return "05"; }
+    else if (s.equals("begin summer"))   { return "06"; }
+    else if (s.equals("end summer"))     { return "08"; }
+    else if (s.equals("begin fall"))     { return "09"; }
+    else if (s.equals("begin autumn"))   { return "09"; }
+    else if (s.equals("end fall"))       { return "11"; }
+    else if (s.equals("end autumn"))     { return "11"; }
+    else if (s.equals("begin winter"))   { return "12"; }
+    else if (s.equals("end winter"))     { return "02"; }
 
     return "??";
   }

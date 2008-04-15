@@ -464,7 +464,7 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
   String heading1,heading2, heading3, heading4, heading5, restricted,note; 
   String subseriestitle,subseriesnumber,subseriesdate,subseriessize,subseriesdesc;
   String item_no, h,d, s, r = null;
-  
+
   boxno=0;
   prev_reel =0;
   boolean isFrame=false;
@@ -491,7 +491,7 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
       
       dscString.append("<did>\n");
       dscString.append("<unittitle>"+seriestitle+"</unittitle>\n");
-      dscString.append("<unitdate>"+seriesdate+"</unitdate>\n");
+      dscString.append("<unitdate normal=\"" + DateHandler.displayToNorm(seriesdate) + "\">"+seriesdate+"</unitdate>\n");
       dscString.append("<physdesc>"+seriessize+"</physdesc>");
       dscString.append("</did>\n");
 
@@ -536,7 +536,7 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
 	// subseries is present now make the CO2 and then get the CO3/C04
 	dscString.append("<c02 level='subseries' id='subseries"+seriesnumber+"."+subseriesnumber+"'>");
 	dscString.append("<did><unittitle>"+subseriestitle+"</unittitle>\n");
-	dscString.append("<unitdate>"+subseriesdate+"</unitdate>\n");
+	dscString.append("<unitdate normal=\"" + DateHandler.displayToNorm(subseriesdate) + "\">"+subseriesdate+"</unitdate>\n");
 	if(subseriessize !=null) {
 	  dscString.append("<physdesc>"+subseriessize+"</physdesc>\n");
 	}
