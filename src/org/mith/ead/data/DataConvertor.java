@@ -463,7 +463,7 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
   String query,query1,query2;
   String heading1,heading2, heading3, heading4, heading5, restricted,note; 
   String subseriestitle,subseriesnumber,subseriesdate,subseriessize,subseriesdesc;
-  String item_no, h,d, s, r = null;
+  String item_no, h,d, s, r, n = null;
 
   boxno=0;
   prev_reel =0;
@@ -482,7 +482,9 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
       String id = archid;
       String arrangementID = rsSe.getString("arrangementID");
       String seriesnumber = rsSe.getString("seriesnumber");
-      dscString.append("\n<c01 level='series' id='series"+seriesnumber+"'>\n");
+      String seriessort = rsSe.getString("seriessort");
+
+      dscString.append("\n<c01 level='series' id='series"+seriesnumber+"' altrender='"+seriessort+"'>\n");
       
       String seriestitle = rsSe.getString("seriestitle");
       String seriesdate= rsSe.getString("seriesdate");
@@ -491,7 +493,7 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
       
       dscString.append("<did>\n");
       dscString.append("<unittitle>"+seriestitle+"</unittitle>\n");
-      dscString.append("<unitdate normal=\"" + DateHandler.displayToNorm(seriesdate) + "\">"+seriesdate+"</unitdate>\n");
+      dscString.append("<unitdate>"+seriesdate+"</unitdate>\n");
       dscString.append("<physdesc>"+seriessize+"</physdesc>");
       dscString.append("</did>\n");
 
@@ -530,13 +532,14 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
 	subseriessize= rs.getString("subseriessize");
 	subseriesdesc= rs.getString("subseriesdesc");
 	log.debug("SUBSERIESTITLE: " + subseriestitle);
+	String subseriessort = rs.getString("subseriessort");
 	
 	
 	
 	// subseries is present now make the CO2 and then get the CO3/C04
-	dscString.append("<c02 level='subseries' id='subseries"+seriesnumber+"."+subseriesnumber+"'>");
+	dscString.append("<c02 level='subseries' id='subseries"+seriesnumber+"."+subseriesnumber+"' altrender='"+subseriessort+"'>");
 	dscString.append("<did><unittitle>"+subseriestitle+"</unittitle>\n");
-	dscString.append("<unitdate normal=\"" + DateHandler.displayToNorm(subseriesdate) + "\">"+subseriesdate+"</unitdate>\n");
+	dscString.append("<unitdate>"+subseriesdate+"</unitdate>\n");
 	if(subseriessize !=null) {
 	  dscString.append("<physdesc>"+subseriessize+"</physdesc>\n");
 	}
@@ -637,13 +640,14 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
                 
 	  // Added 14 th of March the size  which will display (or not) physdesc
 	  String size = rs1.getString("size");
-                        
+
+	  String boxlistid = rs1.getString("boxlistid");
 	  heading1 = rs1.getString("heading1");
 	  heading2 = rs1.getString("heading2");
 	  heading3 = rs1.getString("heading3");
 	  heading4 = rs1.getString("heading4");
 	  heading5 = rs1.getString("heading5");
-                        
+	  note = rs1.getString("note");
 	  String date = rs1.getString("date");
 	  restricted = rs1.getString("restricted");
                         
@@ -696,14 +700,19 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
                         
                         
 	  dscString.append("</unittitle>\n");
-	  dscString.append("<unitdate>"+date+"</unitdate>\n");
+	  dscString.append("<unitdate normal=\"" + DateHandler.displayToNorm(date) + "\">"+date+"</unitdate>\n");
 	  if(size!=null)
 	    dscString.append("<physdesc>"+size+"</physdesc>\n");
 	  dscString.append( "</did>\n");
+	  if (note!=null)
+	    dscString.append("<note>"+note+"</note>\n");
 	  if(restricted.equals("1")){
 	    dscString.append("<accessrestrict><p>Restricted</p></accessrestrict>");   
                                   
 	  }
+
+	  addSubjectsBoxList(boxlistid, dscString);
+
 	  /////////////////////////////////////co4////////////////////////////////////
 	  
 	  int delme = 0;
@@ -714,13 +723,19 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
 	    d = rs2.getString("date");
 	    s = rs2.getString("size");
 	    r = rs2.getString("restricted");
-	    dscString.append("<c04 level='item'><did>\n<container parent='box"+boxno+"."+box+"' type='item'>"+item_no+"</container>\n<unittitle>"+h+"</unittitle>\n<unitdate>"+d+"</unitdate>\n");
+	    n = rs2.getString("note");
+	    String itemlistid = rs2.getString("itemlistid");
+	    dscString.append("<c04 level='item'><did>\n<container parent='box"+boxno+"."+box+"' type='item'>"+item_no+"</container>\n<unittitle>"+h+"</unittitle>\n<unitdate normal=\"" + DateHandler.displayToNorm(d) + "\">"+d+"</unitdate>\n");
                                                         
 	    if(s != null)
 	      dscString.append("<physdesc>"+s+"</physdesc>\n");
                         
 	    //NEW 9/25/2006                 
 	    dscString.append("</did>\n");
+	    if (n != null)
+	      dscString.append("<note><p>"+n+"</p></note>\n");
+
+	    //addSubjectsItemList(itemlistid, dscString);
 	    if(r.equals("1")){
 	      dscString.append("<accessrestrict><p>Restricted</p></accessrestrict>");}  
 	    dscString.append("\n</c04>\n"); 
@@ -893,7 +908,7 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
 	dscString.append("</unittitle>\n");
                         
 	if(date != null)
-	  dscString.append("<unitdate>"+date+"</unitdate>\n");
+	  dscString.append("<unitdate normal=\"" + DateHandler.displayToNorm(date) + "\">"+date+"</unitdate>\n");
                 
 	// Added March 13th 2005
 	if(size != null)
@@ -905,11 +920,15 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
 	  dscString.append("<accessrestrict><p>Restricted</p></accessrestrict>");    
 	}
 
-//	Runtime run = Runtime.getRuntime();
-//	System.out.println("max: " + run.maxMemory() + "\n"
-//			   + "fre: " + run.freeMemory() + "\n"
-//			   + "tot: " + run.totalMemory() + "\n");
-
+	Runtime run = Runtime.getRuntime();
+	//log.info("max: " + run.maxMemory() + "\n"
+	//		   + "fre: " + run.freeMemory() + "\n"
+	//		   + "tot: " + run.totalMemory() + "\n");
+	//
+	//log.debug("about to cause a major memory problem!");
+	//log.info("boxlistid = " + boxlistid);
+	//ouch this is causing heap memory problems
+	//log.info("dscString length = " + dscString.length());
 	addSubjectsBoxList(boxlistid, dscString);
 
 //	dscString.append("<controlaccess><persname>SUBJECT</persname></controlaccess> Repeatable");
@@ -931,12 +950,19 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
 	  d = rs2.getString("date");
 	  s = rs2.getString("size");
 	  r = rs2.getString("restricted");
-	  dscString.append( "<c03 level='item'><did>\n<container parent='box"+boxno+"."+box+"' type='item'>"+item_no+"</container>\n<unittitle>"+h+"</unittitle>\n<unitdate>"+d+"</unitdate>\n");
+	  n = rs2.getString("note");
+	  String itemlistid = rs2.getString("itemlistid");
+	  dscString.append( "<c03 level='item'><did>\n<container parent='box"+boxno+"."+box+"' type='item'>"+item_no+"</container>\n<unittitle>"+h+"</unittitle>\n<unitdate normal=\"" + DateHandler.displayToNorm(d) + "\">"+d+"</unitdate>\n");
                                                         
 	  if(s != null)
 	    dscString.append( "<physdesc>"+s+"</physdesc>\n");
 //NEW 9/25/2006                 
 	  dscString.append( "</did>\n");
+	  if (n != null) 
+	    dscString.append("<note><p>"+n+"</p></note>\n");
+
+	  //addSubjectsItemList(itemlistid, dscString);
+
 	  if(r.equals("1")){
 	    dscString.append("<accessrestrict><p>Restricted</p></accessrestrict>");}  
 	  dscString.append( "\n</c03>\n"); 
@@ -974,7 +1000,7 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
 
   dscString.append("\n</dsc>");
 
-  log.debug("convertToDscInXml: exit");
+  log.info("convertToDscInXml: exit");
 
   return dscString.toString();
 }
@@ -988,7 +1014,7 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
       didString ="<did id=\""+getUnique("did_")+"\">\n";
       didString = didString + "<head>Brief Description of the Collection</head>\n";
       didString = didString + "<repository label=\"Repository\">";
-      didString = didString + "<corpname encodinganalog=\"852$a\">"+rsArch.getString("corpname")+"</corpname>";               
+      didString = didString + "<corpname encodinganalog=\"852$a\">University of Maryland, College Park<subarea>"+rsArch.getString("corpname")+"</subarea></corpname>";               
       didString = didString + "<address><addressline>"+rsArch.getString("addressline")+"</addressline></address>";
       didString = didString + "</repository>\n";
 
@@ -1083,8 +1109,9 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
                 
         String id =rsSe.getString("seriesnumber");
         String arrangementID = rsSe.getString("arrangementID");
+	String seriessort = rsSe.getString("seriessort");
                 
-        overString = overString +"<c01 level=\"series\" id=\"series"+id+".a\">";
+        overString = overString +"<c01 level=\"series\" id=\"series"+id+".a\" altrender=\""+seriessort+"\">";
         overString = overString +"<did><unittitle>"+rsSe.getString("seriestitle")+"</unittitle>";
         overString = overString +"<unitdate>"+rsSe.getString("seriesdate")+"</unitdate>";
         overString = overString +"<physdesc>"+rsSe.getString("seriessize")+"</physdesc>";
@@ -1106,9 +1133,10 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
           String subseriesdate= rs.getString("subseriesdate");
           String subseriessize= rs.getString("subseriessize");
           String subseriesdesc= rs.getString("subseriesdesc");
+	  String subseriessort = rs.getString("subseriessort");
                                 
           // subseries is present now make the CO2 and then get the CO3/C04
-          overString = overString + "<c02 level='subseries' id='subseries"+id+"."+subseriesnumber+".a'>";
+          overString = overString + "<c02 level='subseries' id='subseries"+id+"."+subseriesnumber+".a' altrender=\""+subseriessort+"\">";
           overString = overString + "<did><unittitle>"+subseriestitle+"</unittitle>\n";
           overString = overString + "<unitdate>"+subseriesdate+"</unitdate>\n";
           if(subseriessize !=null)
@@ -1383,7 +1411,11 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
       descString = descString +"</accessrestrict>\n";
                         
       String altfor = rsArch.getString("altformavail");
-                        
+      String appraisals = rsArch.getString("appraisals");
+      if (appraisals == null) { appraisals = ""; }
+      String originalsloc = rsArch.getString("originalsloc");
+      if (originalsloc == null) { originalsloc = ""; }
+
       if(altfor != null && altfor != ""){
         //<!--NOTE: If this <altformavail> tag is empty, we do not want to "print" it.-->
         descString = descString +"<altformavail encodinganalog=\"530\">\n";
@@ -1399,7 +1431,7 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
 
       descString = descString +"<prefercite encodinganalog=\"524\">\n";
       descString = descString +"<head>Preferred Citation</head>\n";
-      descString = descString +"<p>"+rsArch.getString("unittitle")+", Special Collections, University of Maryland Libraries.</p>\n";
+      descString = descString +"<p>"+rsArch.getString("unittitle")+", " + rsArch.getString("corpname") + ", Special Collections, University of Maryland Libraries.</p>\n";
       descString = descString +"</prefercite>\n";
 
       descString = descString +"<processinfo encodinganalog=\"583\">\n";
@@ -1414,6 +1446,9 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
       //<!--NOTE.  Still not sure how to make a hyperlink in EAD/XML--!>
 
       descString = descString +"</descgrp>\n";
+
+      descString = descString +"<appraisals><p>" + appraisals + "</p></appraisals>\n";
+      descString = descString +"<originalsloc><p>" + originalsloc + "</p></originalsloc>\n";
                         
       descString = descString +"<bioghist id=\""+getUnique("bio_")+"\" encodinganalog=\"545\">";
       descString = descString +"<head>"+rsArch.getString("biotype")+"</head>";
@@ -1519,6 +1554,7 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
     //headerData = headerData +"<date>"+rsEc.getString("creationdate")+"</date>";                   
     //headerData = headerData +"</creation>\n";
         
+    headerData = headerData +"<descrules>Finding aid prepared using DACS</descrules>\n";
     headerData = headerData +"<creation>"+creation+"<date>"+creationdate+"</date>\n";
     headerData = headerData +"</creation>\n";
     headerData = headerData +"<langusage>Finding aid written in <language langcode=\"eng\">English</language></langusage>";
@@ -1671,18 +1707,41 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
 
   public void addSubjectsBoxList(String boxlistid, StringBuffer dscString) throws SQLException {
     if (stmtSubjectsBoxList == null) {
-      stmtSubjectsBoxList = this.conn.prepareStatement("SELECT topic FROM SubjectsBoxList where BoxListID=?");
+      stmtSubjectsBoxList = this.conn.prepareStatement("SELECT type,topic FROM SubjectsBoxList where BoxListID=?");
     }
 
+    //log.info("in addsubjectsboxlist");
     stmtSubjectsBoxList.clearParameters();
     stmtSubjectsBoxList.setString(1, boxlistid);
 
     ResultSet rs = stmtSubjectsBoxList.executeQuery();
     while(rs.next()){
-                        
+      String type = rs.getString("type");
       String topic = rs.getString("topic");
-      if (topic != null) {
-	dscString.append("<controlaccess><subject>" + topic + "</subject></controlaccess>\n");
+      if (type != null && topic != null) {
+	dscString.append("<controlaccess><teenytest><" + type + ">" + topic + "</" + type + "></teenytest></controlaccess>\n");
+      }
+    }
+    rs.close();
+    //log.info("done addsubjectsboxlist");
+  }
+
+  public PreparedStatement stmtSubjectsItemList = null;
+
+  public void addSubjectsItemList(String itemlistid, StringBuffer dscString) throws SQLException {
+    if (stmtSubjectsItemList == null) {
+      stmtSubjectsItemList = this.conn.prepareStatement("SELECT type,topic FROM SubjectsItemList where ItemListID=?");
+    }
+
+    stmtSubjectsItemList.clearParameters();
+    stmtSubjectsItemList.setString(1, itemlistid);
+
+    ResultSet rs = stmtSubjectsItemList.executeQuery();
+    while(rs.next()){
+      String type = rs.getString("type");
+      String topic = rs.getString("topic");
+      if (type != null && topic != null) {
+	dscString.append("<controlaccess><" + type + ">" + topic + "</" + type + "></controlaccess>\n");
       }
     }
     rs.close();

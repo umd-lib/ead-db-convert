@@ -216,6 +216,12 @@ public class DateHandler {
       r1 = displayToNormSingle(s);
     }
 
+    // yyyy/yyyy
+    else if ((m = get("(\\d{4}) */ *(\\d{4})").matcher(s)).matches()) {
+      r1 = displayToNormSingle(m.group(1));
+      r2 = displayToNormSingle(m.group(2));
+    }
+
     // circa yyyy-yyyy
     else if ((m = get("circa *(\\d{4}) *- *(\\d{4})").matcher(s)).matches()) {
       r1 = displayToNormSingle(s);
