@@ -186,13 +186,13 @@ public class DataConvertor {
       // TODO Auto-generated catch block
       e2.printStackTrace();
     }
-        
-    String archDesc = "<archdesc level=\"collection\" type=\"combined\">\n";
+    StringBuffer archDesc = new StringBuffer(10000000);
+    archDesc.append("<archdesc level=\"collection\" type=\"combined\">\n");
         
         
         
     if(rsArch != null && rsApl != null)
-      archDesc = archDesc + convertToDidXml(rsArch,rsApl,rsGu);
+	archDesc.append(convertToDidXml(rsArch,rsApl,rsGu));
     else
       log.debug("Problem: rsArch rsApl rsGu");
                         
@@ -230,7 +230,7 @@ public class DataConvertor {
                 
                                 
     if(rsArch != null)
-      archDesc = archDesc + convertToDescgrpXml(rsArch);
+      archDesc.append(convertToDescgrpXml(rsArch));
     else
       log.debug("Problem: rsArch DescgrpXml");
                             
@@ -249,13 +249,13 @@ public class DataConvertor {
     }
                         
     if(rsArch != null && rsGu != null && rsSe  != null)             
-      archDesc = archDesc + convertToArrXml(rsArch,rsSe,rsGu);
+	archDesc.append(convertToArrXml(rsArch,rsSe,rsGu));
     else
       log.debug("Problem: ArrXml");
                 
                 
     if(rsSub != null && rsSubDuplicate != null)
-      archDesc = archDesc + convertToConXml(rsSub,rsSubDuplicate);
+	archDesc.append(convertToConXml(rsSub,rsSubDuplicate));
     else
       log.debug("Problem: ConXml");
                 
@@ -301,7 +301,7 @@ public class DataConvertor {
     //////////////////
                 
     if(rsSe != null && doOver)
-      archDesc = archDesc +convertToDscOverXml(id,rsSe);
+	archDesc.append(convertToDscOverXml(id,rsSe));
     else
       log.debug("Problem: OverXml");
                                 
@@ -371,10 +371,9 @@ public class DataConvertor {
     isFrameReel = true;
                                 
     if(rsSe != null && doIndepth)
-      archDesc = archDesc + convertToDscInXml(id,rsSe);
+	archDesc.append(convertToDscInXml(id,rsSe));
     else
       log.debug("Not doing in-depth The BoxList is absent");
-                
                 
                 
                 
@@ -382,12 +381,10 @@ public class DataConvertor {
     log.debug("^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^");
     log.debug("$$$$$: isFrameReel " + isFrameReel);
         
-    archDesc = archDesc + "</archdesc>";
-                                
+    archDesc.append("</archdesc>");
+                
     xmlDoc.append(archDesc);
     xmlDoc.append("</ead>");
-                                
-                                
                                 
     //      System.out.println(xmlDoc.toString());          
                 
@@ -925,10 +922,6 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
 	//		   + "fre: " + run.freeMemory() + "\n"
 	//		   + "tot: " + run.totalMemory() + "\n");
 	//
-	//log.debug("about to cause a major memory problem!");
-	//log.info("boxlistid = " + boxlistid);
-	//ouch this is causing heap memory problems
-	//log.info("dscString length = " + dscString.length());
 	addSubjectsBoxList(boxlistid, dscString);
 
 //	dscString.append("<controlaccess><persname>SUBJECT</persname></controlaccess> Repeatable");
@@ -961,7 +954,7 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
 	  if (n != null) 
 	    dscString.append("<note><p>"+n+"</p></note>\n");
 
-	  //addSubjectsItemList(itemlistid, dscString);
+	  addSubjectsItemList(itemlistid, dscString);
 
 	  if(r.equals("1")){
 	    dscString.append("<accessrestrict><p>Restricted</p></accessrestrict>");}  
@@ -999,8 +992,6 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
   log.debug("============================================");
 
   dscString.append("\n</dsc>");
-
-  log.info("convertToDscInXml: exit");
 
   return dscString.toString();
 }
@@ -1503,6 +1494,7 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
     String creationdate= rsArch.getString("creationdate");
     String publisher= rsArch.getString("publisher");
     String addressline= rsArch.getString("addressline");
+    String handle= rsArch.getString("handle");
         
     if(status==null){status="";}
     if(title==null){title="";}
@@ -1512,7 +1504,7 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
     if(creationdate==null){creationdate="";}
     if(publisher==null){publisher="";}
     if(addressline==null){addressline="";}
-        
+    if(handle==null){handle="";}
         
     this.xmlDoc.setId(eadid);
     this.xmlDoc.setTitle(title);
@@ -1523,7 +1515,7 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
     //headerData = "<ead relatedencoding=\"MARC21\"> \n";
     headerData = "<eadheader audience=\"internal\"" +             " countryencoding=\"iso3166-1\" dateencoding=\"iso8601\" " +          "langencoding=\"iso639-2b\" findaidstatus=\""+status+"\">";
         
-    headerData = headerData +"<eadid countrycode=\"iso3611-1\" mainagencycode=\"MdU\">"+eadid+"</eadid> \n";
+    headerData = headerData +"<eadid countrycode=\"iso3611-1\" mainagencycode=\"MdU\" url=\""+handle+"\">"+eadid+"</eadid> \n";
         
     headerData = headerData +"<filedesc> \n";
     headerData = headerData +"<titlestmt> \n";
@@ -1710,7 +1702,6 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
       stmtSubjectsBoxList = this.conn.prepareStatement("SELECT type,topic FROM SubjectsBoxList where BoxListID=?");
     }
 
-    //log.info("in addsubjectsboxlist");
     stmtSubjectsBoxList.clearParameters();
     stmtSubjectsBoxList.setString(1, boxlistid);
 
@@ -1718,12 +1709,15 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
     while(rs.next()){
       String type = rs.getString("type");
       String topic = rs.getString("topic");
+      //if (type != null && topic != null) {
+      //	dscString.append("<controlaccess><" + type + ">" + topic + "</" + type + "></controlaccess>\n");
+      //}
       if (type != null && topic != null) {
-	dscString.append("<controlaccess><teenytest><" + type + ">" + topic + "</" + type + "></teenytest></controlaccess>\n");
+	  dscString.append("<controlaccess><" + type + ">" + topic + "</" + type + "></controlaccess>\n");
+	  //dscString.append("<controlaccess><subject>Put some subject of interest in here</subject></controlaccess>\n");
       }
     }
     rs.close();
-    //log.info("done addsubjectsboxlist");
   }
 
   public PreparedStatement stmtSubjectsItemList = null;
