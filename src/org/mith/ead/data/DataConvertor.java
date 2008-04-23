@@ -1504,7 +1504,6 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
     if(creationdate==null){creationdate="";}
     if(publisher==null){publisher="";}
     if(addressline==null){addressline="";}
-    if(handle==null){handle="";}
         
     this.xmlDoc.setId(eadid);
     this.xmlDoc.setTitle(title);
@@ -1515,7 +1514,11 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
     //headerData = "<ead relatedencoding=\"MARC21\"> \n";
     headerData = "<eadheader audience=\"internal\"" +             " countryencoding=\"iso3166-1\" dateencoding=\"iso8601\" " +          "langencoding=\"iso639-2b\" findaidstatus=\""+status+"\">";
         
-    headerData = headerData +"<eadid countrycode=\"iso3611-1\" mainagencycode=\"MdU\" url=\""+handle+"\">"+eadid+"</eadid> \n";
+    headerData = headerData +"<eadid countrycode=\"iso3611-1\" mainagencycode=\"MdU\"";
+    if (handle!= null) {
+	headerData = headerData + "url=\""+handle+"\"";
+    }
+    headerData += ">"+eadid+"</eadid> \n";
         
     headerData = headerData +"<filedesc> \n";
     headerData = headerData +"<titlestmt> \n";
