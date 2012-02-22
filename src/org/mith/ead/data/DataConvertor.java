@@ -492,6 +492,9 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
       dscString.append("<unittitle>"+seriestitle+"</unittitle>\n");
       dscString.append("<unitdate>"+seriesdate+"</unitdate>\n");
       dscString.append("<physdesc>"+seriessize+"</physdesc>");
+      //Jennie wants to add this: January 2012 to include "digitallink" URL field contents to appear in the <did>
+      //dscString.append("<dao href="" + digitallink + " " actuate="onrequest" show="new"/>");
+      //Also not sure if this will work - need to ask Ben how to handle quotation marks
       dscString.append("</did>\n");
 
       log.debug("SERIESTITLE: " + seriestitle);
@@ -700,6 +703,11 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
 	  dscString.append("<unitdate normal=\"" + DateHandler.displayToNorm(date) + "\">"+date+"</unitdate>\n");
 	  if(size!=null)
 	    dscString.append("<physdesc>"+size+"</physdesc>\n");
+	  
+	//Jennie's note January 2012: Do I also need to set up something here to add in the dao link?
+	//dscString.append("<dao href="" + digitallink + " " actuate="onrequest" show="new"/>");
+   //Also not sure if this will work - need to ask Ben how to handle quotation marks
+     
 	  dscString.append( "</did>\n");
 	  if (note!=null)
 	    dscString.append("<note>"+note+"</note>\n");
@@ -719,6 +727,9 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
 	    h = rs2.getString("heading1");
 	    d = rs2.getString("date");
 	    s = rs2.getString("size");
+	    //Jennie's note January 2012
+	    //Do I need to add something here about the DAO?
+	    // Can I set my own letter - o = rs2.getString("dao");
 	    r = rs2.getString("restricted");
 	    n = rs2.getString("note");
 	    String itemlistid = rs2.getString("itemlistid");
@@ -726,6 +737,9 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
                                                         
 	    if(s != null)
 	      dscString.append("<physdesc>"+s+"</physdesc>\n");
+	    //Jennie's note January 2012
+	    //if (o != null)
+	    //dscString.append("<dao href="" + o + " " actuate="onrequest" show="new"/>\n");
                         
 	    //NEW 9/25/2006                 
 	    dscString.append("</did>\n");
@@ -858,6 +872,7 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
 	  restricted = rs1.getString("restricted");
 	  note     = rs1.getString("note");
 	  String size = rs1.getString("size");
+	  //Jennie's Note January 2012 - also need to add something about DAO here?
 	  
 	  log.debug("BOX IS: " + box);
                         
@@ -910,8 +925,9 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
 	// Added March 13th 2005
 	if(size != null)
 	  dscString.append("<physdesc>"+size+"</physdesc>\n");
-                        
-                        
+                       
+    //Jennie's note January 2012 - Need to add something about DAO here?
+	
 	dscString.append("</did>\n");
 	if(restricted.equals("1")){
 	  dscString.append("<accessrestrict><p>Restricted</p></accessrestrict>");    
@@ -949,6 +965,9 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
                                                         
 	  if(s != null)
 	    dscString.append( "<physdesc>"+s+"</physdesc>\n");
+	  
+	   //Jennie's note January 2012 - Need to add something about DAO here?
+
 //NEW 9/25/2006                 
 	  dscString.append( "</did>\n");
 	  if (n != null) 
