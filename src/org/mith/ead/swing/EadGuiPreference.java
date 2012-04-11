@@ -176,7 +176,6 @@ public class EadGuiPreference extends JFrame implements ActionListener{
     middlePanel.add(debug, gbc);
     
     debugBtn = new JCheckBox();
-    debugBtn.setSelected(dataproperty.getDebug());
     gbc = set_gbc(gbc,3,1,0.5,0,GridBagConstraints.HORIZONTAL);
     gbc.ipadx =50;
     gbc.insets = new Insets(0,5,0,30);
@@ -202,8 +201,8 @@ public class EadGuiPreference extends JFrame implements ActionListener{
   
   
   private GridBagConstraints set_gbc(GridBagConstraints gbc,
-                                     int row, int column, double wx,
-                                     double wy, int fill) {
+				     int row, int column, double wx,
+				     double wy, int fill) {
     gbc.gridy = row;
     gbc.gridx = column;
     gbc.weightx = wx;
@@ -225,27 +224,27 @@ public class EadGuiPreference extends JFrame implements ActionListener{
       int returnVal = fc.showOpenDialog(this);
       File file = null;
       if (returnVal == JFileChooser.APPROVE_OPTION) {
-        file = fc.getSelectedFile();
-        //This is where a real application would open the file.
-        log.debug("Opening: " + file.getAbsolutePath() + ".\n");
+	file = fc.getSelectedFile();
+	//This is where a real application would open the file.
+	log.debug("Opening: " + file.getAbsolutePath() + ".\n");
           
       } else {
-        log.debug("Open command cancelled by user.\n");
+	log.debug("Open command cancelled by user.\n");
       }
            
       if(file != null){
-        if(!file.canRead() || !file.canWrite()){
-          JOptionPane.showMessageDialog(this,
-                                        "No Permission to read/write to the directory.\n Choose some other directory",
-                                        "Directory Permission error",
-                                        JOptionPane.ERROR_MESSAGE);
+	if(!file.canRead() || !file.canWrite()){
+	  JOptionPane.showMessageDialog(this,
+					"No Permission to read/write to the directory.\n Choose some other directory",
+					"Directory Permission error",
+					JOptionPane.ERROR_MESSAGE);
               
               
 
-        }else{
-          wspaceTextBox.setText(file.getAbsolutePath());  
+	}else{
+	  wspaceTextBox.setText(file.getAbsolutePath());  
                
-        }
+	}
       }
 
       
@@ -264,15 +263,12 @@ public class EadGuiPreference extends JFrame implements ActionListener{
       gui.dp.setDatabaseUrl(uriTextBox.getText());
       
       try {
-        gui.dc.connect();
+	gui.dc.connect();
       }
       catch (Exception e2) {};
 
       gui.dp.setProjectDir(wspaceTextBox.getText());
       gui.dp.setDriver((String)dataList.getSelectedValue());
-                gui.dp.setDebug(debugBtn.isSelected());
-
-                gui.dp.sync();
       log.debug("SAVED THE DP");
 
       log.info("Debugging is set to: " + debugBtn.isSelected());
@@ -285,18 +281,15 @@ public class EadGuiPreference extends JFrame implements ActionListener{
     
   }
 
-
   /**
-   * Reset all prefs to their default values.
+   * 
    */
   private void reset() {
     
     uriTextBox.setText(gui.dp.getDatabaseUrl());
     wspaceTextBox.setText(gui.dp.getProjectDir());
     dataList.setSelectedIndex(0);
-    debugBtn.setSelected(gui.dp.getDebug());
   }
-
 
   /**
    * @param dp

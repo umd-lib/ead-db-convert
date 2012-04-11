@@ -67,19 +67,11 @@ public void append(String s){
 	data.append(s);	
 }
 
-public void append(StringBuffer s){
-    data = s.insert(0,data);	
-    //data.append(s);
-}
-
 public String toString(){
 	
 	return data.toString();
 }
 
-public int length(){
-        return data.length();
-}
 
 /**
  * @param author
