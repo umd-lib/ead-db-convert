@@ -4,82 +4,105 @@
  */
 package org.mith.ead.data;
 
+import java.util.prefs.Preferences;
+
 /**
  * @author amit
  * 
  */
 public class DatabaseProperty {
 
-final String DB_URL = "jdbc:odbc:ead";
-final String DRIVER ="sun.jdbc.odbc.JdbcOdbcDriver";
-final String WORKSPACE_DIR = "";
+  final String DB_URL = "jdbc:odbc:ead";
+  final String DRIVER ="sun.jdbc.odbc.JdbcOdbcDriver";
+  final String WORKSPACE_DIR = "";
+  final boolean DEBUG=false;
 
-String databaseUrl;
-String databaseName;
-String driver;
-String projDir;
+  private Preferences prefs = null;
 
-/**
- * @return
- */
-public String getDatabaseName() {
-	return databaseName;
-}
+  /**
+   * Constructor.
+   */
+  public DatabaseProperty() {
+    prefs = Preferences.userNodeForPackage(DatabaseProperty.class);
+  }
+ 
+  /**
+   * @return
+   */
+  public String getDatabaseUrl() {
+    return prefs.get("databaseUrl", DB_URL);
+  }
 
-/**
- * @return
- */
-public String getDatabaseUrl() {
-	return databaseUrl;
-}
+  /**
+   * @return
+   */
+  public String getDriver() {
+    return prefs.get("driver", DRIVER);
+  }
 
-/**
- * @return
- */
-public String getDriver() {
-	return driver;
-}
+  /**
+   * @param database url
+   */
+  public void setDatabaseUrl(String durl) {
+    prefs.put("databaseUrl", durl);
+  }
 
-/**
- * @param database name // redundant
- */
-public void setDatabaseName(String string) {
-	databaseName = string;
-}
+  /**
+   * @param  driver
+   */
+  public void setDriver(String dr) {
+    prefs.put("driver", dr);
+  }
 
-/**
- * @param database url
- */
-public void setDatabaseUrl(String durl) {
-	databaseUrl = durl;
-}
+  /**
+   * @returns project directory 
+   */
+  public String getProjectDir() {
+    return prefs.get("projDir", WORKSPACE_DIR);
+  }
 
-/**
- * @param  driver
- */
-public void setDriver(String dr) {
-	driver = dr;
-}
+  public void setProjectDir(String projectdirectory){
+    prefs.put("projDir", projectdirectory);
+  }
 
-/**
- * @returns project directory 
- */
-public String getProjectDir() {
-	return projDir;
-}
+  /**
+   * Get debugging
+   */
 
-public void setProjectDir(String projectdirectory){
-	projDir = projectdirectory;
-}
+  public boolean getDebug() {
+    return prefs.getBoolean("debug", false);
+  }
 
-/**
- * 
- */
-public void reset() {
-	setProjectDir(WORKSPACE_DIR);
-	setDriver(DRIVER);
-	setDatabaseUrl(DB_URL);
-}
+  /**
+   * Set debugging
+   */
 
+  public void setDebug(boolean debug) {
+    prefs.putBoolean("debug", debug);
+  }
+
+  /**
+   * 
+   */
+  public void reset() {
+    setProjectDir(WORKSPACE_DIR);
+    setDriver(DRIVER);
+    setDatabaseUrl(DB_URL);
+    setDebug(DEBUG);
+  }
+
+
+  /**
+   * Synchronize the preferences with the backing store.
+   */
+
+  public void sync() {
+    try {
+      prefs.sync();
+    }
+    catch (Exception e) {
+      e.printStackTrace();
+    }
+  }
 
 }
