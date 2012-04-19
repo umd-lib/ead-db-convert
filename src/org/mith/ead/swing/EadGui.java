@@ -63,7 +63,7 @@ public class EadGui extends JFrame implements ActionListener{
 
 
   public EadGui(){
-    super("EAD Finding Aids @MD 0.3a Release: 04-10-2007");
+    super("EAD Finding Aids @UMD rev. 1468 Release: 04-19-2012");
     setDefaultLookAndFeelDecorated(true);
     setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     dp = new DatabaseProperty();
