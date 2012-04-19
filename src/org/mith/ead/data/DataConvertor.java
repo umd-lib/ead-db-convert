@@ -462,7 +462,7 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
   String query,query1,query2;
   String heading1,heading2, heading3, heading4, heading5, heading6, heading7, heading8, restricted; 
   String subseriestitle,subseriesnumber,subseriesdate,subseriessize,subseriesdesc;
-  String item_no, h,d, s, r = null;
+  String item_no, h,d, s, l, r = null;
   
   boxno=0;
   prev_reel =0;
@@ -636,7 +636,10 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
                 
 	  // Added 14 th of March the size  which will display (or not) physdesc
 	  String size = rs1.getString("size");
-                        
+
+	  // Added 4/19/2012 the dao link which will display (or not) digitallink
+	  String digitallink = rs1.getString("digitallink");
+	  
 	  heading1 = rs1.getString("heading1");
 	  heading2 = rs1.getString("heading2");
 	  heading3 = rs1.getString("heading3");
@@ -710,6 +713,8 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
 	  dscString.append("<unitdate>"+date+"</unitdate>\n");
 	  if(size!=null)
 	    dscString.append("<physdesc>"+size+"</physdesc>\n");
+	  if(digitallink!=null)
+	    dscString.append("<dao href='"+digitallink+"' actuate='onrequest' show='new'/>\n");
 	  dscString.append( "</did>\n");
 	  if(restricted.equals("1")){
 	    dscString.append("<accessrestrict><p>Restricted</p></accessrestrict>");   
@@ -724,12 +729,16 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
 	    h = rs2.getString("heading1");
 	    d = rs2.getString("date");
 	    s = rs2.getString("size");
+	    l = rs2.getString("digitallink");
 	    r = rs2.getString("restricted");
 	    dscString.append("<c04 level='item'><did>\n<container parent='box"+boxno+"."+box+"' type='item'>"+item_no+"</container>\n<unittitle>"+h+"</unittitle>\n<unitdate>"+d+"</unitdate>\n");
                                                         
 	    if(s != null)
 	      dscString.append("<physdesc>"+s+"</physdesc>\n");
-                        
+        
+	    if(l !=null)
+	      dscString.append("<dao href='"+l+"' actuate='onrequest' show='new'/>\n");
+
 	    //NEW 9/25/2006                 
 	    dscString.append("</did>\n");
 	    if(r.equals("1")){
@@ -863,6 +872,7 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
 	  heading8 = rs1.getString("heading8");
 	  restricted = rs1.getString("restricted");
 	  String size = rs1.getString("size");
+	  String digitallink = rs1.getString("digitallink");
 	  
 	  log.debug("BOX IS: " + box);
                         
@@ -924,7 +934,11 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
 	// Added March 13th 2005
 	if(size != null)
 	  dscString.append("<physdesc>"+size+"</physdesc>\n");
-                        
+    
+	//Added April 19 2012)
+ if(digitallink != null)
+   dscString.append("<dao href='"+digitallink+"' actuate='onrequest' show='new'/>\n");
+
                         
 	dscString.append("</did>\n");
 	if(restricted.equals("1")){
@@ -944,11 +958,16 @@ private String convertToDscInXml(String archid, ResultSet rsSe) {
 	  h = rs2.getString("heading1");
 	  d = rs2.getString("date");
 	  s = rs2.getString("size");
+	  l = rs2.getString("digitallink");
 	  r = rs2.getString("restricted");
 	  dscString.append( "<c03 level='item'><did>\n<container parent='box"+boxno+"."+box+"' type='item'>"+item_no+"</container>\n<unittitle>"+h+"</unittitle>\n<unitdate>"+d+"</unitdate>\n");
                                                         
 	  if(s != null)
 	    dscString.append( "<physdesc>"+s+"</physdesc>\n");
+    
+	  if(l != null)
+	    dscString.append( "<dao href='"+l+"' actuate='onrequest' show='new'/>\n");
+
 //NEW 9/25/2006                 
 	  dscString.append( "</did>\n");
 	  if(r.equals("1")){
